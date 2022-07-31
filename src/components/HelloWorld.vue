@@ -1,0 +1,158 @@
+<script setup>
+import { onMounted, ref } from "vue";
+import { InformationCircleIcon } from "@vue-hero-icons/outline";
+import WInput from "./form-controls/w-input/index.vue";
+import ShowPassword from "./form-controls/show-password/index.vue";
+import ShowPasswordButton from "./form-controls/show-password/show-password-button.vue";
+import BaseInputGroup from "./form-controls/w-input/input-group.vue";
+import WPopper from "./form-controls/w-popper/index.vue";
+import useIMask from "../composables/use-imask";
+import WDatePicker from "./form-controls/w-date-picker/index.vue";
+
+const maskedInputRef = ref(null);
+const testText = ref("");
+const hasError = ref(false);
+const isValid = ref(false);
+const isReadonly = ref(false);
+const isDisabled = ref(false);
+const firsttName = ref("");
+const lasttName = ref("");
+const isLastItemVisible = ref(true);
+const birthdate = ref(null);
+
+const { el, masked, unmasked } = useIMask({
+  mask: "+{36} (00) 000-0000",
+});
+
+const onCustomEvent = () => {
+  console.log("ON-KEYPRESS");
+};
+
+onMounted(() => {
+  el.value = maskedInputRef.value.inputRef.$el;
+});
+</script>
+
+<script>
+export default {
+  $_veeValidate: {
+    validator: "new", // give me my own validator scope.
+  },
+};
+</script>
+
+<template>
+  <div class="container">
+    <div class="form-container">
+      Value: {{ testText }}
+      <div>
+        <label>
+          <input type="checkbox" v-model="hasError" />
+          Error
+        </label>
+        <label>
+          <input type="checkbox" v-model="isValid" />
+          Valid
+        </label>
+        <label>
+          <input type="checkbox" v-model="isReadonly" />
+          Readonly
+        </label>
+        <label>
+          <input type="checkbox" v-model="isDisabled" />
+          Disabled
+        </label>
+        <label>
+          <input type="checkbox" v-model="isLastItemVisible" />
+          Last Item Visible
+        </label>
+      </div>
+    </div>
+    <div class="form-container">
+      <ShowPassword v-slot="{ type }">
+        <w-input
+          v-model="testText"
+          v-validate="'required|min:6'"
+          name="password"
+          class="test-class"
+          label="Password"
+          :type="type"
+          :valid="isValid"
+          :error="hasError"
+          :readonly="isReadonly"
+          :disabled="isDisabled"
+          help="Please add valid password"
+          data-test="password-input"
+          @keypress="onCustomEvent"
+        >
+          <template v-slot:append>
+            <ShowPasswordButton />
+          </template>
+        </w-input>
+      </ShowPassword>
+    </div>
+
+    <div class="form-container">
+      <w-popper
+        content="Please add valid characters"
+        :triggers="['focusWithin']"
+      >
+        <BaseInputGroup>
+          <w-input
+            v-model="firsttName"
+            v-validate="'required'"
+            name="firstname"
+            label="First name"
+            help="Please add valid characters"
+          />
+          <w-input v-model="testText" label="Middle name" />
+          <w-input
+            v-if="isLastItemVisible"
+            v-model="lasttName"
+            v-validate="'required'"
+            name="lastname"
+            label="Last name"
+            error-message="Custom required error message"
+          />
+        </BaseInputGroup>
+      </w-popper>
+    </div>
+
+    <div class="form-container">
+      {{ unmasked }}
+      <w-input
+        ref="maskedInputRef"
+        v-model="masked"
+        inputmode="tel"
+        label="Phone"
+        help="Lorem Ipsum Information"
+      >
+        <template v-slot:append>
+          <w-popper content="Lorem Ipsum Information" append-to="body">
+            <InformationCircleIcon class="info-icon" />
+          </w-popper>
+        </template>
+      </w-input>
+    </div>
+
+    <div>
+      {{ birthdate }}
+      <WDatePicker
+        v-model="birthdate"
+        v-validate="'required'"
+        name="birthdate"
+        label="Birth date"
+        placement="bottom-end"
+        help="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+      />
+    </div>
+  </div>
+</template>
+
+<style lang="scss">
+.info-icon {
+  display: block;
+  margin: 0 15px;
+  stroke: $color-gray-basic;
+}
+</style>

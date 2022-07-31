@@ -1,0 +1,52 @@
+.default-tooltip {
+  max-width: 300px;
+  padding: 18px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: $color-gray-dark;
+  background-color: #fff;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.25));
+
+  .w-popper__arrow {
+    width: 18px;
+    height: 18px;
+  }
+
+  .w-popper__arrow--inner {
+    border-color: #fff;
+    border-width: 9px;
+  }
+
+  .w-popper__arrow--outer {
+    border-width: 10px;
+    visibility: hidden;
+  }
+
+  .w-popper__popper[data-popper-placement^='top'] & .w-popper__arrow {
+    bottom: -19px;
+  }
+  .w-popper__popper[data-popper-placement^='bottom'] & .w-popper__arrow {
+    top: -5px;
+  }
+
+  .w-popper__popper[data-popper-placement^='bottom'] .w-popper__arrow--inner {
+    top: -9px;
+  }
+  .w-popper__popper[data-popper-placement^='bottom'] .w-popper__arrow--outer {
+    top: -11px;
+  }
+
+  .w-popper__popper[data-popper-placement^='left'] & .w-popper__arrow {
+    right: -19px;
+  }
+
+  .w-popper__popper[data-popper-placement^='right'] & .w-popper__arrow--inner {
+    left: -9px;
+  }
+
+  .w-popper__popper[data-popper-placement^='right'] & .w-popper__arrow--outer {
+    left: -11px;
+  }
+}

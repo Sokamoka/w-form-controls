@@ -1,0 +1,17 @@
+.traditional-tooltip {
+  max-width: 300px;
+  padding: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background-color: $color-gray-dark;
+  border-radius: 4px;
+
+  .w-popper__arrow--inner {
+    border-color: $color-gray-dark;
+  }
+
+  .w-popper__arrow--outer {
+    visibility: hidden;
+  }
+}
