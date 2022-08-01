@@ -269,7 +269,9 @@ export const PopoverPanel = defineComponent({
       visible: api.isOpen,
       onKeyDown(event) {
         switch (event.key) {
+          case "Tab":
           case "Escape":
+            console.log(api.isOpen);
             if (!api.isOpen) return;
             if (!unrefElement(api.panelRef)) return;
             if (!unrefElement(api.panelRef)?.contains(document.activeElement))

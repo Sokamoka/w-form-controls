@@ -6,6 +6,7 @@
     :hide-triggers="[]"
     hide-on-click-outside
     handle-resize
+    append-to="body"
   >
     <WInput
       v-model="inputValue"
@@ -22,18 +23,22 @@
       </template>
     </WInput>
     <template v-slot:content>
-      <Calendar :attributes="attributes" @dayclick="onChange"></Calendar>
+      <Calendar
+        :attributes="attributes"
+        @dayclick="onChange"
+        @daykeydown="onDayKeydown"
+      ></Calendar>
     </template>
   </WPopper>
 </template>
 
 <script>
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import Calendar from "v-calendar/lib/components/calendar.umd";
 import { CalendarIcon } from "@vue-hero-icons/outline";
 import WPopper from "../w-popper/index.vue";
 import WInput from "../w-input/index.vue";
-import { formatDate } from "@vueuse/core";
+import { formatDate, unrefElement } from "@vueuse/core";
 import { PLACEMENTS } from "../w-popper/internal";
 
 export default {
@@ -108,9 +113,29 @@ export default {
       emit("blur");
     };
 
+    const onDayKeydown = (event) => {
+      const key = event.event.key;
+      if ((key === " " || key === "Enter") && !event.isDisabled) {
+        emit("input", event.date);
+      }
+    };
+
     onMounted(() => {
       console.log(popperRef.value);
     });
+
+    watch(
+      () => popperRef.value?.isOpen,
+      (open) => {
+        if (!open) return;
+        nextTick(() => {
+          const focusable = unrefElement(popperRef).querySelectorAll(
+            '[tabindex]:not([tabindex="-1"])'
+          );
+          // focusable[0]?.focus();
+        });
+      }
+    );
 
     return {
       popperRef,
@@ -118,6 +143,7 @@ export default {
       attributes,
       onChange,
       onBlur,
+      onDayKeydown,
     };
   },
 };

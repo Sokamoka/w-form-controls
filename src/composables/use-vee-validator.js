@@ -1,16 +1,13 @@
-import { computed } from "vue";
-import { pick } from "ramda";
+import { computed } from 'vue';
+import { pick } from 'ramda';
 
-export default function useValidator(validator) {
+export default function useVeeValidator(validator, props) {
   const validatorFieldFlags = computed(() => {
     const field = validator.fields.find({
       name: props.name,
       ...(props.scope && { scope: props.nam }),
     });
-    return pick(
-      ["touched", "dirty", "valid", "pending", "validated"],
-      field?.flags ?? {}
-    );
+    return pick(['touched', 'dirty', 'valid', 'pending', 'validated'], field?.flags ?? {});
   });
 
   const validatorFieldErrorMessage = computed(() => {

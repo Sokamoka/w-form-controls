@@ -119,6 +119,18 @@ export default {
     </div>
 
     <div class="form-container">
+      {{ birthdate }}
+      <WDatePicker
+        v-model="birthdate"
+        v-validate="'required'"
+        name="birthdate"
+        label="Birth date"
+        placement="bottom-end"
+        help="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+      />
+    </div>
+
+    <div class="form-container">
       {{ unmasked }}
       <w-input
         ref="maskedInputRef"
@@ -133,18 +145,6 @@ export default {
           </w-popper>
         </template>
       </w-input>
-    </div>
-
-    <div>
-      {{ birthdate }}
-      <WDatePicker
-        v-model="birthdate"
-        v-validate="'required'"
-        name="birthdate"
-        label="Birth date"
-        placement="bottom-end"
-        help="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-      />
     </div>
   </div>
 </template>

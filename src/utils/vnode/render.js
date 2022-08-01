@@ -36,7 +36,7 @@ const _render = ({ data = {}, slots, slot, name }) => {
             `The current component <${name} /> is rendering a "template".`,
             `However we need to passthrough the following props:`,
             Object.keys(dataObject)
-              .concat(Object.keys(attrs))
+              .concat(Object.keys(data.attrs))
               .map((line) => `  - ${line}`)
               .join("\n"),
             "",

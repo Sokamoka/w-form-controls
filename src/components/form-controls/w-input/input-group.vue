@@ -3,17 +3,17 @@
     <div class="input-group">
       <slot />
     </div>
-    <template v-for="{ message, name } in errors">
-      <ErrorIndicator v-if="message" :key="name" :message="message" />
+    <template v-for="{ message, name, id } in errors">
+      <ErrorIndicator v-if="message" :id="id" :key="name" :message="message" aria-live="assertive" />
     </template>
   </InputGroup>
 </template>
 <script>
-import { InputGroup } from "../w-input/input";
-import ErrorIndicator from "../../error-indicator.vue";
+import { InputGroup } from '../w-input/input';
+import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
-  name: "BaseInputGroup",
+  name: 'BaseInputGroup',
 
   components: {
     InputGroup,

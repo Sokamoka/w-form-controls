@@ -41,20 +41,14 @@
 </template>
 
 <script>
-import { computed, inject, onUnmounted, ref } from "vue";
-import { pick } from "ramda";
-import { CheckIcon } from "@vue-hero-icons/outline";
-import {
-  InputControl,
-  InputWrapper,
-  InputInput,
-  InputLabel,
-  useInputGroup,
-} from "./input";
-import ErrorIndicator from "../../error-indicator.vue";
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
+import { CheckIcon } from '@vue-hero-icons/outline';
+import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
+import useVeeValidator from '~/composables/use-vee-validator.js'
+import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
-  name: "W-Input",
+  name: 'W-Input',
 
   inheritAttrs: false,
 
@@ -70,27 +64,27 @@ export default {
   props: {
     value: {
       type: String,
-      default: "",
+      default: '',
     },
 
     name: {
       type: String,
-      default: "",
+      default: '',
     },
 
     type: {
       type: String,
-      default: "text",
+      default: 'text',
     },
 
     label: {
       type: String,
-      default: "",
+      default: '',
     },
 
     placeholder: {
       type: String,
-      default: "",
+      default: '',
     },
 
     valid: {
@@ -105,12 +99,12 @@ export default {
 
     errorMessage: {
       type: String,
-      default: "",
+      default: '',
     },
 
     help: {
       type: String,
-      default: "",
+      default: '',
     },
 
     disabled: {
@@ -125,7 +119,7 @@ export default {
 
     scope: {
       type: String,
-      default: "",
+      default: '',
     },
   },
 
@@ -133,47 +127,20 @@ export default {
     const inputRef = ref(null);
     const isInGroup = ref(false);
     const groupApi = useInputGroup();
-    const currentPlaceholder = computed(() =>
-      props.placeholder ? props.placeholder : props.label
-    );
+    const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
-    const validator = inject("$validator", {});
+    const validator = inject('$validator', {});
 
     const modelValue = computed({
       get() {
         return props.value;
       },
       set(value) {
-        emit("input", value);
+        emit('input', value);
       },
     });
 
-    const validatorFieldFlags = computed(() => {
-      const field = validator.fields.find({
-        name: props.name,
-        ...(props.scope && { scope: props.nam }),
-      });
-      return pick(
-        ["touched", "dirty", "valid", "pending", "validated"],
-        field?.flags ?? {}
-      );
-    });
-
-    const validatorFieldErrorMessage = computed(() => {
-      if (props.scope) return validator.errors.first(props.name, props.scope);
-      return validator.errors.first(props.name);
-    });
-
-    const hasError = computed(() => {
-      const { valid, validated, touched } = validatorFieldFlags.value;
-      const fromValidator = !valid && validated && touched;
-      return props.error || fromValidator;
-    });
-
-    const isValid = computed(() => {
-      const { valid } = validatorFieldFlags.value;
-      return props.valid || valid;
-    });
+    const { validatorFieldErrorMessage, hasError, isValid } = useVeeValidator(validator, props);
 
     const currentErrorMessage = computed(() => {
       if (hasError.value && props.errorMessage) return props.errorMessage;
@@ -182,12 +149,18 @@ export default {
 
     if (groupApi) {
       isInGroup.value = true;
-      const payload = {
-        name: props.name,
-        message: currentErrorMessage,
-      };
-      if (props.name) groupApi.register(payload);
-      onUnmounted(() => groupApi.unregister(props.name));
+
+      if (props.name) {
+        onMounted(() => {
+          const payload = {
+            id: `${inputRef.value?.id}-error`,
+            name: props.name,
+            message: currentErrorMessage,
+          };
+          groupApi.register(payload);
+        });
+        onUnmounted(() => groupApi.unregister(props.name));
+      }
     }
 
     return {
@@ -224,8 +197,8 @@ export default {
   border: 1px solid #999;
   border-radius: 5px;
   box-sizing: border-box;
-  transition: padding 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
-    border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  transition: padding 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out,
+    background-color 0.2s ease-in-out;
 }
 
 .w-input-wrapper input {
@@ -284,7 +257,6 @@ export default {
 .w-input-wrapper.is-error {
   background-color: $color-rf-pink-mindblowinglylight;
   border-color: $color-pink-basic;
-  box-shadow: inset 0 0 0 1px $color-pink-basic,
-    0 0 10px rgba($color-pink-basic, 0.35);
+  box-shadow: inset 0 0 0 1px $color-pink-basic, 0 0 10px rgba($color-pink-basic, 0.35);
 }
 </style>
