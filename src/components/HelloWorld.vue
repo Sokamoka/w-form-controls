@@ -1,31 +1,38 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { InformationCircleIcon } from "@vue-hero-icons/outline";
-import WInput from "./form-controls/w-input/index.vue";
-import ShowPassword from "./form-controls/show-password/index.vue";
-import ShowPasswordButton from "./form-controls/show-password/show-password-button.vue";
-import BaseInputGroup from "./form-controls/w-input/input-group.vue";
-import WPopper from "./form-controls/w-popper/index.vue";
-import useIMask from "../composables/use-imask";
-import WDatePicker from "./form-controls/w-date-picker/index.vue";
+import { onMounted, reactive, ref } from 'vue';
+import { InformationCircleIcon } from '@vue-hero-icons/outline';
+import WInput from './form-controls/w-input/index.vue';
+import ShowPassword from './form-controls/show-password/index.vue';
+import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
+import BaseInputGroup from './form-controls/w-input/input-group.vue';
+import WPopper from './form-controls/w-popper/index.vue';
+import useIMask from '../composables/use-imask';
+import WDatePicker from './form-controls/w-date-picker/index.vue';
 
 const maskedInputRef = ref(null);
-const testText = ref("");
+const testText = ref('');
 const hasError = ref(false);
 const isValid = ref(false);
 const isReadonly = ref(false);
 const isDisabled = ref(false);
-const firsttName = ref("");
-const lasttName = ref("");
 const isLastItemVisible = ref(true);
 const birthdate = ref(null);
 
+const formdata = reactive({
+  email: '',
+  password: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  birthdate: null,
+});
+
 const { el, masked, unmasked } = useIMask({
-  mask: "+{36} (00) 000-0000",
+  mask: '+{36} (00) 000-0000',
 });
 
 const onCustomEvent = () => {
-  console.log("ON-KEYPRESS");
+  console.log('ON-KEYPRESS');
 };
 
 onMounted(() => {
@@ -36,7 +43,7 @@ onMounted(() => {
 <script>
 export default {
   $_veeValidate: {
-    validator: "new", // give me my own validator scope.
+    validator: 'new', // give me my own validator scope.
   },
 };
 </script>
@@ -44,7 +51,7 @@ export default {
 <template>
   <div class="container">
     <div class="form-container">
-      Value: {{ testText }}
+      Value: {{ formdata.email }}
       <div>
         <label>
           <input type="checkbox" v-model="hasError" />
@@ -69,21 +76,35 @@ export default {
       </div>
     </div>
     <div class="form-container">
+      <w-input
+        v-model="formdata.password"
+        v-validate="'required|email'"
+        name="email"
+        class="test-class"
+        label="E-mail"
+        type="text"
+        :valid="isValid"
+        :error="hasError"
+        :readonly="isReadonly"
+        :disabled="isDisabled"
+        help="Please add valid e-mail"
+        data-test="email-input"
+        @keypress="onCustomEvent"
+      >
+      </w-input>
+    </div>
+
+    <div class="form-container">
       <ShowPassword v-slot="{ type }">
         <w-input
-          v-model="testText"
+          v-model="formdata.password"
           v-validate="'required|min:6'"
           name="password"
           class="test-class"
           label="Password"
           :type="type"
-          :valid="isValid"
-          :error="hasError"
-          :readonly="isReadonly"
-          :disabled="isDisabled"
           help="Please add valid password"
           data-test="password-input"
-          @keypress="onCustomEvent"
         >
           <template v-slot:append>
             <ShowPasswordButton />
@@ -93,22 +114,19 @@ export default {
     </div>
 
     <div class="form-container">
-      <w-popper
-        content="Please add valid characters"
-        :triggers="['focusWithin']"
-      >
+      <w-popper content="Please add valid characters" :triggers="['focusWithin']">
         <BaseInputGroup>
           <w-input
-            v-model="firsttName"
+            v-model="formdata.firstName"
             v-validate="'required'"
             name="firstname"
             label="First name"
             help="Please add valid characters"
           />
-          <w-input v-model="testText" label="Middle name" />
+          <w-input v-model="formdata.middleName" label="Middle name" />
           <w-input
             v-if="isLastItemVisible"
-            v-model="lasttName"
+            v-model="formdata.lastName"
             v-validate="'required'"
             name="lastname"
             label="Last name"
@@ -121,7 +139,7 @@ export default {
     <div class="form-container">
       {{ birthdate }}
       <WDatePicker
-        v-model="birthdate"
+        v-model="formdata.birthdate"
         v-validate="'required'"
         name="birthdate"
         label="Birth date"
@@ -132,13 +150,7 @@ export default {
 
     <div class="form-container">
       {{ unmasked }}
-      <w-input
-        ref="maskedInputRef"
-        v-model="masked"
-        inputmode="tel"
-        label="Phone"
-        help="Lorem Ipsum Information"
-      >
+      <w-input ref="maskedInputRef" v-model="masked" inputmode="tel" label="Phone" help="Lorem Ipsum Information">
         <template v-slot:append>
           <w-popper content="Lorem Ipsum Information" append-to="body">
             <InformationCircleIcon class="info-icon" />
