@@ -1,28 +1,19 @@
-import {
-  ref,
-  inject,
-  provide,
-  computed,
-  defineComponent,
-  watchEffect,
-} from "vue";
-import { useDebounceFn, useEventListener, unrefElement } from "@vueuse/core";
-import { omit } from "ramda";
-import { render } from "~/utils/vnode/render";
-import { useId } from "~/composables/use-id";
-import { HIDE_EVENT_MAP, SHOW_EVENT_MAP, useTriggerEvents } from "./internal";
+import { ref, inject, provide, computed, defineComponent, watchEffect, nextTick } from 'vue';
+import { useDebounceFn, useEventListener, unrefElement } from '@vueuse/core';
+import { isEmpty, omit } from 'ramda';
+import { render } from '~/utils/vnode/render';
+import { useId } from '~/composables/use-id';
+import { HIDE_EVENT_MAP, SHOW_EVENT_MAP, useTriggerEvents } from './internal';
+import { focusIn, FOCUS_BEHAVIOR, getFocusableElements } from '../../../utils/focus-management';
 
-const PopoverContext = Symbol("PopoverContext");
+const PopoverContext = Symbol('PopoverContext');
 
 const usePopoverContext = (component) => {
   const context = inject(PopoverContext, null);
 
   if (context === null) {
-    const err = new Error(
-      `<${component} /> is missing a parent <Popover /> component.`
-    );
-    if (Error.captureStackTrace)
-      Error.captureStackTrace(err, usePopoverContext);
+    const err = new Error(`<${component} /> is missing a parent <Popover /> component.`);
+    if (Error.captureStackTrace) Error.captureStackTrace(err, usePopoverContext);
     throw err;
   }
 
@@ -30,12 +21,12 @@ const usePopoverContext = (component) => {
 };
 
 export const Popover = defineComponent({
-  name: "Poppper",
+  name: 'Poppper',
 
   props: {
     as: {
       type: [Object, String],
-      default: "div",
+      default: 'div',
     },
 
     disabled: {
@@ -68,21 +59,21 @@ export const Popover = defineComponent({
       togglePopover: () => {
         if (isDisabled.value) return;
         isOpen.value = !isOpen.value;
-        emit("update:shown", isOpen.value);
+        emit('update:shown', isOpen.value);
       },
 
       open: () => {
         if (isDisabled.value) return;
         if (isOpen.value) return;
         isOpen.value = true;
-        emit("update:shown", true);
+        emit('update:shown', true);
       },
 
       close: () => {
         if (isDisabled.value) return;
         if (!isOpen.value) return;
         isOpen.value = false;
-        emit("update:shown", false);
+        emit('update:shown', false);
       },
     };
 
@@ -100,7 +91,7 @@ export const Popover = defineComponent({
   },
 
   render() {
-    const data = omit(["disabled", "shown"], this.$props);
+    const data = omit(['disabled', 'shown'], this.$props);
     const slots = this.$scopedSlots;
     const slot = {
       open: this.isOpen,
@@ -109,23 +100,23 @@ export const Popover = defineComponent({
       data: { ...data, ...this.$attrs },
       slot,
       slots,
-      name: "Popover",
+      name: 'Popover',
     });
   },
 });
 
 export const PopoverButton = defineComponent({
-  name: "PopoverButton",
+  name: 'PopoverButton',
 
   props: {
     as: {
       type: [Object, String],
-      default: "button",
+      default: 'button',
     },
 
     triggers: {
       type: Array,
-      default: () => ["click"],
+      default: () => ['click'],
     },
 
     showTriggers: {
@@ -150,7 +141,7 @@ export const PopoverButton = defineComponent({
   },
 
   setup(props) {
-    const api = usePopoverContext("PopoverButton");
+    const api = usePopoverContext('PopoverButton');
 
     return {
       el: api.triggerRef,
@@ -164,13 +155,31 @@ export const PopoverButton = defineComponent({
 
       onKeyDown(event) {
         switch (event.key) {
-          case "Escape":
-            if (!api.isOpen) return;
-            if (!unrefElement(api.triggerRef)) return;
-            if (!unrefElement(api.triggerRef)?.contains(document.activeElement))
-              return;
+          case 'Enter':
+          case ' ':
             event.preventDefault();
             event.stopPropagation();
+            api.togglePopover();
+            break;
+          case 'Escape':
+            if (!api.isOpen.value) return;
+            if (!unrefElement(api.triggerRef)) return;
+            if (!unrefElement(api.triggerRef)?.contains(document.activeElement)) return;
+            event.preventDefault();
+            event.stopPropagation();
+            api.close();
+            break;
+          case 'ArrowDown':
+          case 'ArrowUp':
+          case 'ArrowLeft':
+          case 'ArrowRight':
+            if (!api.isOpen.value) return;
+            if (isEmpty(getFocusableElements(unrefElement(api.panelRef)))) return;
+            event.preventDefault();
+            event.stopPropagation();
+            focusIn(unrefElement(api.panelRef), FOCUS_BEHAVIOR.first);
+            break;
+          case 'Tab':
             api.close();
             break;
 
@@ -182,7 +191,7 @@ export const PopoverButton = defineComponent({
   },
 
   render() {
-    const api = usePopoverContext("PopoverButton");
+    const api = usePopoverContext('PopoverButton');
     const slots = this.$scopedSlots;
 
     const showTriggerEvents = useTriggerEvents(
@@ -202,10 +211,10 @@ export const PopoverButton = defineComponent({
     );
 
     const propsWeControl = {
-      ref: "el",
+      ref: 'el',
       attrs: {
         id: api.triggerId,
-        "aria-describedby": api.panelId,
+        'aria-describedby': api.panelId,
         disabled: this.$props.disabled ? true : undefined,
       },
 
@@ -219,18 +228,18 @@ export const PopoverButton = defineComponent({
     return render({
       data: { as: this.$props.as, ...propsWeControl, ...this.$attrs },
       slots,
-      name: "PopoverButton",
+      name: 'PopoverButton',
     });
   },
 });
 
 export const PopoverPanel = defineComponent({
-  name: "PopoverPanel",
+  name: 'PopoverPanel',
 
   props: {
     as: {
       type: [Object, String],
-      default: "div",
+      default: 'div',
     },
 
     static: {
@@ -250,16 +259,15 @@ export const PopoverPanel = defineComponent({
   },
 
   setup(props) {
-    const api = usePopoverContext("PopoverPanel");
+    const api = usePopoverContext('PopoverPanel');
 
     if (props.hideOnClickOutside) {
-      useEventListener(window, "mousedown", (event) => {
+      useEventListener(window, 'mousedown', (event) => {
         if (!api.isOpen.value) return;
         const target = event.target;
 
         if (unrefElement(api.triggerRef)?.contains(target)) return;
         if (unrefElement(api.panelRef)?.contains(target)) return;
-
         api.close();
       });
     }
@@ -269,17 +277,16 @@ export const PopoverPanel = defineComponent({
       visible: api.isOpen,
       onKeyDown(event) {
         switch (event.key) {
-          case "Tab":
-          case "Escape":
-            console.log(api.isOpen);
+          case 'Tab':
+          case 'Escape':
             if (!api.isOpen) return;
             if (!unrefElement(api.panelRef)) return;
-            if (!unrefElement(api.panelRef)?.contains(document.activeElement))
-              return;
+            if (!unrefElement(api.panelRef)?.contains(document.activeElement)) return;
             event.preventDefault();
             event.stopPropagation();
+            unrefElement(api.triggerRef)?.focus();
+            // focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
             api.close();
-            unrefElement(api.buttonRef)?.focus();
             break;
           default:
             break;
@@ -289,10 +296,10 @@ export const PopoverPanel = defineComponent({
   },
 
   render() {
-    const api = usePopoverContext("PopoverPanel");
+    const api = usePopoverContext('PopoverPanel');
 
     const propsWeControl = {
-      ref: "el",
+      ref: 'el',
       attrs: {
         id: api.panelId,
       },
@@ -310,8 +317,8 @@ export const PopoverPanel = defineComponent({
       data: { ...this.$props, ...propsWeControl },
       slots,
       visible: this.visible,
-      strategy: "unmount",
-      name: "PopoverPanel",
+      strategy: 'unmount',
+      name: 'PopoverPanel',
     });
   },
 });

@@ -5,7 +5,7 @@ export default function useVeeValidator(validator, props) {
   const validatorFieldFlags = computed(() => {
     const field = validator.fields.find({
       name: props.name,
-      ...(props.scope && { scope: props.nam }),
+      ...(props.scope && { scope: props.scope }),
     });
     return pick(['touched', 'dirty', 'valid', 'pending', 'validated'], field?.flags ?? {});
   });

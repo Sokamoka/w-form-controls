@@ -2,13 +2,12 @@
   <popover
     ref="tooltipRef"
     v-slot:default="{ open }"
-    :as="as"
     :disabled="disabled"
     :shown="shown"
     @update:shown="onChangeVisbility"
   >
     <popover-button
-      as="template"
+      :as="as"
       :triggers="triggers"
       :show-triggers="showTriggers"
       :hide-triggers="hideTriggers"
@@ -60,7 +59,7 @@ export default {
      */
     as: {
       type: [Object, String],
-      default: 'div',
+      default: 'template',
     },
 
     /**
@@ -281,8 +280,13 @@ export default {
 </script>
 
 <style src="./themes/default-tooltip.scss" lang="scss"></style>
+<style src="./themes/content-within.scss" lang="scss"></style>
 
 <style lang="scss">
+.w-popper__popper {
+  z-index: 1;
+}
+
 .popper-fade {
   &-enter-active,
   &-leave-active {

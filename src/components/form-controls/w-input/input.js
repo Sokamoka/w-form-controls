@@ -1,16 +1,16 @@
-import { unrefElement } from "@vueuse/core";
-import { findIndex, omit, propEq } from "ramda";
-import { computed, defineComponent, inject, provide, reactive, ref } from "vue";
-import { useId } from "../../../composables/use-id";
-import { render } from "../../../utils/vnode/render";
+import { unrefElement } from '@vueuse/core';
+import { findIndex, omit, propEq } from 'ramda';
+import { computed, defineComponent, inject, provide, reactive, ref } from 'vue';
+import { useId } from '../../../composables/use-id';
+import { render } from '../../../utils/vnode/render';
 
 export const InputControl = defineComponent({
-  name: "InputControl",
+  name: 'InputControl',
 
   props: {
     as: {
       type: String,
-      default: "div",
+      default: 'div',
     },
   },
 
@@ -42,17 +42,17 @@ export const InputControl = defineComponent({
 });
 
 export const InputWrapper = defineComponent({
-  name: "InputWrapper",
+  name: 'InputWrapper',
 
   props: {
     value: {
       type: [String, Number],
-      default: "",
+      default: '',
     },
 
     as: {
       type: String,
-      default: "div",
+      default: 'div',
     },
 
     disabled: {
@@ -77,13 +77,14 @@ export const InputWrapper = defineComponent({
 
     const onFocusIn = (event) => {
       isOnFocus.value = true;
-      emit("focus", event);
+      emit('focus', event);
     };
 
     const onFocusOut = (event) => {
-      if (unrefElement(inputWrapperRef)?.contains(event.relatedTarget)) return;
+      // console.log(event, unrefElement(inputWrapperRef)?.contains(event.target));
+      // if (unrefElement(inputWrapperRef)?.contains(event.target)) return;
       isOnFocus.value = false;
-      emit("blur", event);
+      emit('blur', event);
     };
 
     const api = {
@@ -92,12 +93,8 @@ export const InputWrapper = defineComponent({
       disabled: computed(() => props.disabled),
       readonly: computed(() => props.readonly),
       onInput(value) {
-        emit("input", value);
+        emit('input', value);
       },
-      // onFocus() {
-      //   isOnFocus.value = true;
-      //   emit("focus");
-      // },
     };
 
     provide(InputContext, api);
@@ -132,7 +129,7 @@ export const InputWrapper = defineComponent({
     const slots = this.$scopedSlots;
     const data = {
       as: this.$props.as,
-      ref: "inputWrapperRef",
+      ref: 'inputWrapperRef',
       on: {
         focusin: this.onFocusIn,
         focusout: this.onFocusOut,
@@ -144,12 +141,12 @@ export const InputWrapper = defineComponent({
 });
 
 export const InputInput = defineComponent({
-  name: "InputInput",
+  name: 'InputInput',
 
   props: {
     type: {
       type: String,
-      default: "text",
+      default: 'text',
     },
 
     disabled: {
@@ -184,11 +181,11 @@ export const InputInput = defineComponent({
   },
 
   render() {
-    const listeners = omit(["input"], this.$listeners);
+    const listeners = omit(['input'], this.$listeners);
 
     const data = {
-      as: "input",
-      ref: "refEl",
+      as: 'input',
+      ref: 'refEl',
       attrs: {
         id: this.id,
         type: this.$props.type,
@@ -206,30 +203,30 @@ export const InputInput = defineComponent({
     };
     const slots = this.$scopedSlots;
 
-    return render({ data, slots, name: "InputInput" });
+    return render({ data, slots, name: 'InputInput' });
   },
 });
 
 export const InputLabel = defineComponent({
-  name: "InputLabel",
+  name: 'InputLabel',
 
   render() {
     const api = inject(InputContext, null);
 
     const data = {
-      as: "label",
+      as: 'label',
       attrs: {
         for: api.inputRef?.value.id,
       },
     };
     const slots = this.$scopedSlots;
 
-    return render({ data, slots, name: "InputLabel" });
+    return render({ data, slots, name: 'InputLabel' });
   },
 });
 
 export const InputGroup = defineComponent({
-  name: "InputGroup",
+  name: 'InputGroup',
 
   setup() {
     const inputs = ref([]);
@@ -237,7 +234,7 @@ export const InputGroup = defineComponent({
       inputs,
       register: (item) => inputs.value.push(item),
       unregister: (name) => {
-        const index = findIndex(propEq("name", name))(inputs.value);
+        const index = findIndex(propEq('name', name))(inputs.value);
         if (index === -1) return;
         inputs.value.splice(index, 1);
       },
@@ -251,7 +248,7 @@ export const InputGroup = defineComponent({
   },
 
   render() {
-    const data = { as: "div" };
+    const data = { as: 'div' };
     const slot = { errors: this.inputs };
     const slots = this.$scopedSlots;
 
@@ -259,7 +256,7 @@ export const InputGroup = defineComponent({
       data,
       slots,
       slot,
-      name: "InputGroup",
+      name: 'InputGroup',
     });
   },
 });
@@ -274,6 +271,6 @@ export const useInputControl = () => {
   return control;
 };
 
-const InputContext = Symbol("InputContext");
-const InputGroupContext = Symbol("InputGroupContext");
-const InputControlContext = Symbol("InputControlContext");
+const InputContext = Symbol('InputContext');
+const InputGroupContext = Symbol('InputGroupContext');
+const InputControlContext = Symbol('InputControlContext');

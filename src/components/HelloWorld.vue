@@ -145,6 +145,7 @@ export default {
         label="Birth date"
         placement="bottom-end"
         help="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+        append-to="body"
       />
     </div>
 

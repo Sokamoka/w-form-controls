@@ -4,9 +4,10 @@
     :placement="placement"
     :show-triggers="['focusWithin']"
     :hide-triggers="[]"
+    :append-to="appendTo"
+    theme="content-within"
     hide-on-click-outside
     handle-resize
-    append-to="body"
   >
     <WInput
       v-model="inputValue"
@@ -22,27 +23,31 @@
         <CalendarIcon class="icon" />
       </template>
     </WInput>
-    <template v-slot:content>
+    <template v-slot:content="{ close }">
       <Calendar
         :attributes="attributes"
-        @dayclick="onChange"
-        @daykeydown="onDayKeydown"
-      ></Calendar>
+        v-bind="$attrs"
+        @dayclick="(event) => onChange(event, close)"
+        @daykeydown="(event) => onDayKeydown(event, close)"
+      />
     </template>
   </WPopper>
 </template>
 
 <script>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
-import Calendar from "v-calendar/lib/components/calendar.umd";
-import { CalendarIcon } from "@vue-hero-icons/outline";
-import WPopper from "../w-popper/index.vue";
-import WInput from "../w-input/index.vue";
-import { formatDate, unrefElement } from "@vueuse/core";
-import { PLACEMENTS } from "../w-popper/internal";
+import { computed, onMounted, ref } from 'vue';
+import { formatDate, unrefElement, useEventListener } from '@vueuse/core';
+import Calendar from 'v-calendar/lib/components/calendar.umd';
+import { CalendarIcon } from '@vue-hero-icons/outline';
+import WPopper from '../w-popper/index.vue';
+import WInput from '../w-input/index.vue';
+import { PLACEMENTS } from '../w-popper/internal';
+import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
-  name: "DatePicker",
+  name: 'DatePicker',
+
+  inheritAttrs: false,
 
   components: { WPopper, WInput, Calendar, CalendarIcon },
 
@@ -54,88 +59,89 @@ export default {
 
     name: {
       type: String,
-      default: "",
+      default: '',
     },
 
     scope: {
       type: String,
-      default: "",
+      default: '',
     },
 
     label: {
       type: String,
-      default: "",
+      default: '',
     },
 
     placement: {
       type: String,
-      default: "top",
+      default: 'top',
       validator: (value) => PLACEMENTS.includes(value),
     },
 
     format: {
       type: String,
-      default: "MM/DD/YYYY",
+      default: 'MM/DD/YYYY',
     },
 
     help: {
       type: String,
-      default: "",
+      default: '',
+    },
+
+    appendTo: {
+      type: String,
+      default: '',
     },
   },
 
   setup(props, { emit }) {
     const popperRef = ref(null);
-    const inputValue = computed(
-      () => props.value && formatDate(props.value, props.format)
-    );
+    const inputValue = computed(() => props.value && formatDate(props.value, props.format));
 
     const attributes = computed(() => {
       return [
         {
           highlight: {
-            color: "pink",
-            fillMode: "light",
+            color: 'pink',
+            fillMode: 'light',
+            base: { fillMode: 'light' },
           },
 
           dates: props.value,
+          // dates: { start: new Date(2022, 7, 14), end: new Date(2022, 7, 18) },
         },
       ];
     });
 
-    const onChange = (value) => {
-      emit("input", value.date);
+    const onChange = (event, close) => {
+      emit('input', event.date);
+      console.log(unrefElement(popperRef.value?.tooltipRef.triggerRef));
+      focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
+      // close();
+    };
+
+    const onDayKeydown = (event, close) => {
+      const key = event.event.key;
+      if ([' ', 'Enter'].includes(key) && !event.isDisabled) {
+        emit('input', event.date);
+        focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
+        close();
+      }
     };
 
     const onBlur = (event) => {
-      console.log(event);
-      if (popperRef.value?.popperRef.contains(event.relatedTarget)) return;
-      emit("blur");
+      // console.log(unrefElement(popperRef.value?.popperRef), document.activeElement);
+      if (unrefElement(popperRef.value?.popperRef).contains(event.relatedTarget)) return;
+      emit('blur');
     };
 
-    const onDayKeydown = (event) => {
-      const key = event.event.key;
-      if ((key === " " || key === "Enter") && !event.isDisabled) {
-        emit("input", event.date);
-      }
-    };
+    useEventListener(unrefElement(popperRef), 'keydown', (event) => {
+      console.log(event);
+    });
 
     onMounted(() => {
       console.log(popperRef.value);
     });
-
-    watch(
-      () => popperRef.value?.isOpen,
-      (open) => {
-        if (!open) return;
-        nextTick(() => {
-          const focusable = unrefElement(popperRef).querySelectorAll(
-            '[tabindex]:not([tabindex="-1"])'
-          );
-          // focusable[0]?.focus();
-        });
-      }
-    );
 
     return {
       popperRef,
@@ -156,6 +162,7 @@ export default {
   stroke: $color-gray-basic;
   pointer-events: none;
 }
+
 .vc-container {
   border-color: transparent;
 }

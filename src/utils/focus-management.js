@@ -1,4 +1,5 @@
 export const FOCUS_BEHAVIOR = {
+  first: 'FirstElement',
   previous: 'PreviousElement',
   next: 'NextElement',
 };
@@ -32,6 +33,7 @@ export function focusIn(container, focusBehavior, loop = false) {
   const { activeElement } = ownerDocument;
 
   const direction = (() => {
+    if (focusBehavior === FOCUS_BEHAVIOR.first) return 0;
     if (focusBehavior === FOCUS_BEHAVIOR.next) return 1;
     if (focusBehavior === FOCUS_BEHAVIOR.previous) return -1;
 
@@ -56,6 +58,7 @@ export function focusIn(container, focusBehavior, loop = false) {
     } else if (nextIdx < 0 || nextIdx >= numberOfElements) return;
 
     nextElement = elements[nextIdx];
+    console.log('nextElement:', nextElement);
     nextElement.focus(focusOptions);
 
     // Try the nextElement one in line
