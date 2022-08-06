@@ -174,6 +174,7 @@ export const PopoverButton = defineComponent({
 
       onLeave: useDebounceFn((event) => {
         // console.log('onLeave', event);
+        if (isEmpty(getFocusableElements(unrefElement(api.panelRef)))) return api.close();
         const el = event.relatedTarget;
         if (!el) return;
         if (!unrefElement(api.panelRef)) return;

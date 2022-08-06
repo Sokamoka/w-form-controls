@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { InformationCircleIcon, EyeIcon } from '@vue-hero-icons/outline';
+import { InformationCircleIcon, EyeIcon, PhoneIcon } from '@vue-hero-icons/outline';
 import WInput from './form-controls/w-input/index.vue';
 import ShowPassword from './form-controls/show-password/index.vue';
 import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
@@ -129,7 +129,7 @@ export default {
         data-test="password-input"
       >
         <template v-slot:append>
-          <EyeIcon tabindex="0" aria-label="Show Password" @click="change" @keypress.enter.space="change" />
+          <EyeIcon tabindex="0" aria-label="Show Password" @click="change" @keypress.enter.space.prevent="change" />
         </template>
       </w-input>
     </div>
@@ -173,9 +173,12 @@ export default {
     <div class="form-container">
       {{ unmasked }}
       <w-input ref="maskedInputRef" v-model="masked" inputmode="tel" label="Phone" help="Lorem Ipsum Information">
+        <template v-slot:prepend>
+          <PhoneIcon class="icon-prepend" />
+        </template>
         <template v-slot:append>
-          <w-popper content="Lorem Ipsum Information" append-to="body">
-            <InformationCircleIcon class="info-icon" />
+          <w-popper content="Lorem Ipsum Information">
+            <InformationCircleIcon class="icon-append" />
           </w-popper>
         </template>
       </w-input>
@@ -184,9 +187,14 @@ export default {
 </template>
 
 <style lang="scss">
-.info-icon {
+.icon-prepend {
   display: block;
-  margin: 0 15px;
+  margin: 0 0 0 15px;
+  stroke: $color-gray-basic;
+}
+.icon-append {
+  display: block;
+  margin: 0 15px 0 0;
   stroke: $color-gray-basic;
 }
 </style>

@@ -15,17 +15,20 @@
       @focus="$emit('focus')"
       @blur="$emit('blur', $event)"
     >
-      <InputInput
-        ref="inputRef"
-        :type="type"
-        :name="name"
-        :placeholder="currentPlaceholder"
-        :aria-describedby="error ? `${id}-error` : `${id}-help`"
-        :aria-invalid="error ? true : null"
-        v-bind="$attrs"
-        v-on="$listeners"
-      />
-      <InputLabel>{{ label }}</InputLabel>
+      <slot name="prepend" />
+      <div class="w-input-container">
+        <InputInput
+          ref="inputRef"
+          :type="type"
+          :name="name"
+          :placeholder="currentPlaceholder"
+          :aria-describedby="error ? `${id}-error` : `${id}-help`"
+          :aria-invalid="error ? true : null"
+          v-bind="$attrs"
+          v-on="$listeners"
+        />
+        <InputLabel>{{ label }}</InputLabel>
+      </div>
       <CheckIcon v-if="isValid" class="valid-icon" />
       <slot name="append" />
     </InputWrapper>
@@ -194,10 +197,15 @@ export default {
     background-color 0.2s ease-in-out;
 }
 
+.w-input-container {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
 .w-input-wrapper input {
   flex: 1;
   padding: 20px;
-  width: 100%;
   font-size: 16px;
   line-height: 20px;
   border: none;
