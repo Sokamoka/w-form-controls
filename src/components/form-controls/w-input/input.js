@@ -1,4 +1,3 @@
-import { unrefElement } from '@vueuse/core';
 import { findIndex, omit, propEq } from 'ramda';
 import { computed, defineComponent, inject, provide, reactive, ref } from 'vue';
 import { useId } from '../../../composables/use-id';
@@ -182,7 +181,6 @@ export const InputInput = defineComponent({
 
   render() {
     const listeners = omit(['input'], this.$listeners);
-
     const data = {
       as: 'input',
       ref: 'refEl',

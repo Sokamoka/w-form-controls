@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { InformationCircleIcon } from '@vue-hero-icons/outline';
+import { InformationCircleIcon, EyeIcon } from '@vue-hero-icons/outline';
 import WInput from './form-controls/w-input/index.vue';
 import ShowPassword from './form-controls/show-password/index.vue';
 import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
@@ -8,9 +8,9 @@ import BaseInputGroup from './form-controls/w-input/input-group.vue';
 import WPopper from './form-controls/w-popper/index.vue';
 import useIMask from '../composables/use-imask';
 import WDatePicker from './form-controls/w-date-picker/index.vue';
+import useShowPassword from '../composables/use-show-password';
 
 const maskedInputRef = ref(null);
-const testText = ref('');
 const hasError = ref(false);
 const isValid = ref(false);
 const isReadonly = ref(false);
@@ -21,11 +21,14 @@ const birthdate = ref(null);
 const formdata = reactive({
   email: '',
   password: '',
+  password2: '',
   firstName: '',
   middleName: '',
   lastName: '',
   birthdate: null,
 });
+
+const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
 
 const { el, masked, unmasked } = useIMask({
   mask: '+{36} (00) 000-0000',
@@ -77,7 +80,7 @@ export default {
     </div>
     <div class="form-container">
       <w-input
-        v-model="formdata.password"
+        v-model="formdata.email"
         v-validate="'required|email'"
         name="email"
         class="test-class"
@@ -111,6 +114,24 @@ export default {
           </template>
         </w-input>
       </ShowPassword>
+    </div>
+
+    <div class="form-container">
+      <w-input
+        v-model="formdata.password2"
+        v-validate="'required|min:6'"
+        name="password2"
+        data-vv-as="Data as Password"
+        class="test-class"
+        label="Password"
+        :type="passwordFieldType"
+        help="Please add valid password"
+        data-test="password-input"
+      >
+        <template v-slot:append>
+          <EyeIcon tabindex="0" aria-label="Show Password" @click="change" @keypress.enter.space="change" />
+        </template>
+      </w-input>
     </div>
 
     <div class="form-container">

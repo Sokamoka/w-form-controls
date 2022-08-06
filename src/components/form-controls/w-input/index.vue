@@ -32,7 +32,6 @@
     <ErrorIndicator
       v-if="hasError && !isInGroup"
       :id="`${id}-error`"
-      class="error-message"
       aria-live="assertive"
       :message="currentErrorMessage"
     />
@@ -44,7 +43,7 @@
 import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
 import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
-import useVeeValidator from '~/composables/use-vee-validator.js'
+import useVeeValidator from '~/composables/use-vee-validator.js';
 import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
@@ -181,17 +180,11 @@ export default {
 <style lang="scss" scoped>
 .w-input-control {
   flex: 1;
-
-  .error-message {
-    text-align: left;
-    color: $color-pink-basic;
-  }
 }
 
 .w-input-wrapper {
-  display: flex;
+  display: inline-flex;
   position: relative;
-  flex-direction: row;
   width: 100%;
   align-items: center;
   border: 1px solid #999;

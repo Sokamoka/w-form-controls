@@ -47,7 +47,9 @@ export const Popover = defineComponent({
     const isOpen = ref(false);
     const triggerRef = ref(null);
     const panelRef = ref(null);
+    const wrapperRef = ref(null);
 
+    const ownerDocument = computed(() => unrefElement(wrapperRef)?.ownerDocument);
     const isDisabled = computed(() => props.disabled);
 
     const api = {
@@ -84,9 +86,28 @@ export const Popover = defineComponent({
       isOpen.value = props.shown;
     });
 
+    // Handle focus out
+    useEventListener(
+      window,
+      'focus',
+      (event) => {
+        console.log('owner:', ownerDocument.value);
+        console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
+        // if (!isOpen.value) return;
+        if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
+        if (unrefElement(triggerRef)?.contains(event.target)) return;
+        if (unrefElement(panelRef)?.contains(event.target)) return;
+        console.log('CLOSE');
+        api.close();
+        emit('leave');
+      },
+      true
+    );
+
     return {
       isOpen,
       triggerRef,
+      wrapperRef,
     };
   },
 
@@ -97,7 +118,7 @@ export const Popover = defineComponent({
       open: this.isOpen,
     };
     return render({
-      data: { ...data, ...this.$attrs },
+      data: { as: this.$props.as, ref: 'wrapperRef', ...data, ...this.$attrs },
       slot,
       slots,
       name: 'Popover',
@@ -151,7 +172,14 @@ export const PopoverButton = defineComponent({
 
       onEnter: useDebounceFn(() => api.open(), props.openDelay),
 
-      onLeave: useDebounceFn(() => api.close(), props.closeDelay),
+      onLeave: useDebounceFn((event) => {
+        // console.log('onLeave', event);
+        const el = event.relatedTarget;
+        if (!el) return;
+        if (!unrefElement(api.panelRef)) return;
+        if (unrefElement(api.panelRef)?.contains(el)) return;
+        api.close();
+      }, props.closeDelay),
 
       onKeyDown(event) {
         switch (event.key) {
@@ -179,9 +207,10 @@ export const PopoverButton = defineComponent({
             event.stopPropagation();
             focusIn(unrefElement(api.panelRef), FOCUS_BEHAVIOR.first);
             break;
-          case 'Tab':
-            api.close();
-            break;
+          // case 'Tab':
+          //   api.close();
+          //   nextTick(() => console.log(document.activeElement));
+          //   break;
 
           default:
             break;
@@ -268,7 +297,14 @@ export const PopoverPanel = defineComponent({
 
         if (unrefElement(api.triggerRef)?.contains(target)) return;
         if (unrefElement(api.panelRef)?.contains(target)) return;
+        // unrefElement(api.triggerRef)?.focus();
+        focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
+        event.preventDefault();
         api.close();
+
+        nextTick(() => {
+          console.log('active', document.activeElement);
+        });
       });
     }
 
@@ -284,8 +320,8 @@ export const PopoverPanel = defineComponent({
             if (!unrefElement(api.panelRef)?.contains(document.activeElement)) return;
             event.preventDefault();
             event.stopPropagation();
-            unrefElement(api.triggerRef)?.focus();
-            // focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
+            // unrefElement(api.triggerRef)?.focus();
+            focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
             api.close();
             break;
           default:

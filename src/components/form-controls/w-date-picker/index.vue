@@ -1,13 +1,16 @@
 <template>
   <WPopper
+    as="div"
     ref="popperRef"
     :placement="placement"
-    :show-triggers="['focusWithin']"
-    :hide-triggers="[]"
+    :triggers="['focusWithin']"
     :append-to="appendTo"
     theme="content-within"
-    hide-on-click-outside
     handle-resize
+    hide-on-click-outside
+    :shown="isPopperVisible"
+    @update:shown="onPopperVisibleUpdate"
+    @leave="$emit('blur')"
   >
     <WInput
       v-model="inputValue"
@@ -17,26 +20,26 @@
       :scope="scope"
       readonly
       @focus="$emit('focus')"
-      @blur="onBlur"
+      @click.stop="onClick"
     >
       <template v-slot:append>
         <CalendarIcon class="icon" />
       </template>
     </WInput>
-    <template v-slot:content="{ close }">
+    <template v-slot:content>
       <Calendar
         :attributes="attributes"
         v-bind="$attrs"
-        @dayclick="(event) => onChange(event, close)"
-        @daykeydown="(event) => onDayKeydown(event, close)"
+        @dayclick="onChange"
+        @daykeydown="onDayKeydown"
       />
     </template>
   </WPopper>
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue';
-import { formatDate, unrefElement, useEventListener } from '@vueuse/core';
+import { computed, ref } from 'vue';
+import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import WPopper from '../w-popper/index.vue';
@@ -96,6 +99,7 @@ export default {
 
   setup(props, { emit }) {
     const popperRef = ref(null);
+    const isPopperVisible = ref(false);
     const inputValue = computed(() => props.value && formatDate(props.value, props.format));
 
     const attributes = computed(() => {
@@ -113,43 +117,36 @@ export default {
       ];
     });
 
-    const onChange = (event, close) => {
+    const onChange = (event) => {
       emit('input', event.date);
-      console.log(unrefElement(popperRef.value?.tooltipRef.triggerRef));
+      // console.log(unrefElement(popperRef.value?.tooltipRef.triggerRef));
       focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
       // close();
+      isPopperVisible.value = false;
     };
 
-    const onDayKeydown = (event, close) => {
+    const onDayKeydown = (event) => {
       const key = event.event.key;
       if ([' ', 'Enter'].includes(key) && !event.isDisabled) {
         emit('input', event.date);
         focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
-        close();
+        // close();
+        isPopperVisible.value = false;
       }
     };
-
-    const onBlur = (event) => {
-      // console.log(unrefElement(popperRef.value?.popperRef), document.activeElement);
-      if (unrefElement(popperRef.value?.popperRef).contains(event.relatedTarget)) return;
-      emit('blur');
-    };
-
-    useEventListener(unrefElement(popperRef), 'keydown', (event) => {
-      console.log(event);
-    });
-
-    onMounted(() => {
-      console.log(popperRef.value);
-    });
 
     return {
       popperRef,
       inputValue,
       attributes,
+      isPopperVisible,
       onChange,
-      onBlur,
       onDayKeydown,
+      onClick: (event) => {
+        if (isPopperVisible.value) return;
+        isPopperVisible.value = true;
+      },
+      onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
     };
   },
 };

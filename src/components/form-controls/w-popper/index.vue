@@ -5,6 +5,7 @@
     :disabled="disabled"
     :shown="shown"
     @update:shown="onChangeVisbility"
+    @leave="$emit('leave')"
   >
     <popover-button
       :as="as"
