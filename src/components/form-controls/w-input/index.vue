@@ -12,10 +12,11 @@
       ]"
       :disabled="disabled"
       :readonly="readonly"
-      @focus="$emit('focus')"
+      @focus="$emit('focus', $event)"
       @blur="$emit('blur', $event)"
     >
       <slot name="prepend" />
+
       <div class="w-input-container">
         <InputInput
           ref="inputRef"
@@ -30,15 +31,16 @@
         <InputLabel>{{ label }}</InputLabel>
       </div>
       <CheckIcon v-if="isValid" class="valid-icon" />
+
       <slot name="append" />
     </InputWrapper>
     <ErrorIndicator
-      v-if="hasError && !isInGroup"
+      v-if="hasError && !isInGroup && !errorMessageDisabled"
       :id="`${id}-error`"
       aria-live="assertive"
       :message="currentErrorMessage"
     />
-    <p v-if="help" :id="`${id}-help`" class="sr-only">{{ help }}</p>
+    <p v-if="helperText" :id="`${id}-help`" :class="{ 'sr-only': helperTextHidden }">{{ helperText }}</p>
   </InputControl>
 </template>
 
@@ -104,9 +106,14 @@ export default {
       default: '',
     },
 
-    help: {
+    helperText: {
       type: String,
       default: '',
+    },
+
+    helperTextHidden: {
+      type: Boolean,
+      default: true,
     },
 
     disabled: {
@@ -122,6 +129,11 @@ export default {
     scope: {
       type: String,
       default: '',
+    },
+
+    errorMessageDisabled: {
+      type: Boolean,
+      dafault: false,
     },
   },
 

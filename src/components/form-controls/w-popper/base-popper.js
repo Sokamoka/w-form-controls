@@ -91,13 +91,12 @@ export const Popover = defineComponent({
       window,
       'focus',
       (event) => {
-        console.log('owner:', ownerDocument.value);
-        console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
+        // console.log('owner:', ownerDocument.value);
+        // console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
         // if (!isOpen.value) return;
         if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
         if (unrefElement(triggerRef)?.contains(event.target)) return;
         if (unrefElement(panelRef)?.contains(event.target)) return;
-        console.log('CLOSE');
         api.close();
         emit('leave');
       },
@@ -208,10 +207,6 @@ export const PopoverButton = defineComponent({
             event.stopPropagation();
             focusIn(unrefElement(api.panelRef), FOCUS_BEHAVIOR.first);
             break;
-          // case 'Tab':
-          //   api.close();
-          //   nextTick(() => console.log(document.activeElement));
-          //   break;
 
           default:
             break;
@@ -303,9 +298,9 @@ export const PopoverPanel = defineComponent({
         event.preventDefault();
         api.close();
 
-        nextTick(() => {
-          console.log('active', document.activeElement);
-        });
+        // nextTick(() => {
+        //   console.log('active', document.activeElement);
+        // });
       });
     }
 

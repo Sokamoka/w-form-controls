@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { InformationCircleIcon, EyeIcon, PhoneIcon } from '@vue-hero-icons/outline';
+import { InformationCircleIcon, EyeIcon, EyeOffIcon, PhoneIcon, CalendarIcon } from '@vue-hero-icons/outline';
 import WInput from './form-controls/w-input/index.vue';
 import ShowPassword from './form-controls/show-password/index.vue';
 import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
@@ -9,6 +9,7 @@ import WPopper from './form-controls/w-popper/index.vue';
 import useIMask from '../composables/use-imask';
 import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
+import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
 
 const maskedInputRef = ref(null);
 const hasError = ref(false);
@@ -16,7 +17,6 @@ const isValid = ref(false);
 const isReadonly = ref(false);
 const isDisabled = ref(false);
 const isLastItemVisible = ref(true);
-const birthdate = ref(null);
 
 const formdata = reactive({
   email: '',
@@ -26,6 +26,8 @@ const formdata = reactive({
   middleName: '',
   lastName: '',
   birthdate: null,
+  nameday: null,
+  check: null,
 });
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
@@ -90,7 +92,7 @@ export default {
         :error="hasError"
         :readonly="isReadonly"
         :disabled="isDisabled"
-        help="Please add valid e-mail"
+        helper-text="Please add valid e-mail"
         data-test="email-input"
         @keypress="onCustomEvent"
       >
@@ -106,7 +108,7 @@ export default {
           class="test-class"
           label="Password"
           :type="type"
-          help="Please add valid password"
+          helper-text="Please add valid password"
           data-test="password-input"
         >
           <template v-slot:append>
@@ -125,13 +127,52 @@ export default {
         class="test-class"
         label="Password"
         :type="passwordFieldType"
-        help="Please add valid password"
+        helper-text="Please add valid password"
         data-test="password-input"
       >
         <template v-slot:append>
-          <EyeIcon tabindex="0" aria-label="Show Password" @click="change" @keypress.enter.space.prevent="change" />
+          <EyeOffIcon
+            v-if="passwordFieldType === 'text'"
+            tabindex="0"
+            aria-label="Hide Password"
+            :class="['icon-append']"
+            @click="change"
+            @keypress.enter.space.prevent="change"
+          />
+          <EyeIcon
+            v-else
+            tabindex="0"
+            aria-label="Show Password"
+            :class="['icon-append']"
+            @click="change"
+            @keypress.enter.space.prevent="change"
+          />
         </template>
       </w-input>
+    </div>
+
+    <div class="form-container">
+      <WDatePicker v-model="formdata.nameday" v-validate="'required'" name="nameday" placement="bottom">
+        <template v-slot:default="{ value, click, error, valid }">
+          <WInput
+            v-model="value"
+            label="Name day"
+            :valid="valid"
+            :error="error"
+            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+            readonly
+            error-message-disabled
+            @click.stop="click"
+          >
+            <template v-slot:append>
+              <CalendarIcon class="icon-append" />
+            </template>
+          </WInput>
+        </template>
+        <template v-slot:helper="{ error, message }">
+          <p v-if="error">{{ message }}</p>
+        </template>
+      </WDatePicker>
     </div>
 
     <div class="form-container">
@@ -142,7 +183,7 @@ export default {
             v-validate="'required'"
             name="firstname"
             label="First name"
-            help="Please add valid characters"
+            helper-text="Please add valid characters"
           />
           <w-input v-model="formdata.middleName" label="Middle name" />
           <w-input
@@ -158,21 +199,59 @@ export default {
     </div>
 
     <div class="form-container">
-      {{ birthdate }}
       <WDatePicker
         v-model="formdata.birthdate"
         v-validate="'required'"
         name="birthdate"
         label="Birth date"
         placement="bottom-end"
-        help="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+        helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
         append-to="body"
       />
     </div>
 
     <div class="form-container">
+      {{ formdata.check }}
+      <WDatePickerRange
+        v-model="formdata.check"
+        placement="top"
+        append-to="body"
+        format="YYYY-MM-DD"
+        :columns="2"
+        v-slot="{ startId, endId, startDate, endDate, click, focus }"
+      >
+        <BaseInputGroup>
+          <w-input
+            v-validate="'required'"
+            name="checkin"
+            label="Check-in"
+            :data-start-id="startId"
+            v-model="startDate"
+            @click="click"
+            @focus="focus"
+          />
+          <w-input
+            v-validate="'required'"
+            name="checkout"
+            label="Check-out"
+            :data-end-id="endId"
+            v-model="endDate"
+            @click="click"
+            @focus="focus"
+          />
+        </BaseInputGroup>
+      </WDatePickerRange>
+    </div>
+
+    <div class="form-container">
       {{ unmasked }}
-      <w-input ref="maskedInputRef" v-model="masked" inputmode="tel" label="Phone" help="Lorem Ipsum Information">
+      <w-input
+        ref="maskedInputRef"
+        v-model="masked"
+        inputmode="tel"
+        label="Phone"
+        helper-text="Lorem Ipsum Information"
+      >
         <template v-slot:prepend>
           <PhoneIcon class="icon-prepend" />
         </template>
@@ -196,5 +275,9 @@ export default {
   display: block;
   margin: 0 15px 0 0;
   stroke: $color-gray-basic;
+
+  &.is-text {
+    stroke: $color-pink-basic;
+  }
 }
 </style>

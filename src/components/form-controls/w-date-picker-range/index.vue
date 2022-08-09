@@ -3,7 +3,8 @@
     as="div"
     ref="popperRef"
     :placement="placement"
-    :triggers="['focusWithin']"
+    :show-triggers="['focusWithin']"
+    :hide-triggers="[]"
     :append-to="appendTo"
     theme="content-within"
     :shown="isPopperVisible"
@@ -12,28 +13,29 @@
     @update:shown="onPopperVisibleUpdate"
     @leave="$emit('blur')"
   >
-    <slot name="default" :value="inputValue" :click="onClick" :error="hasError" :valid="isValid">
-      <WInput
-        v-model="inputValue"
-        :label="label"
-        :help="help"
-        :name="name"
-        :scope="scope"
-        readonly
-        @focus="$emit('focus')"
-        @click.stop="onClick"
-      >
-        <template v-slot:append>
-          <CalendarIcon class="icon" />
-        </template>
-      </WInput>
-    </slot>
+    <slot
+      name="default"
+      :start-date="formatedStartDate"
+      :end-date="formatedEndDate"
+      :error="hasError"
+      :valid="isValid"
+      :start-id="startRefId"
+      :end-id="endRefId"
+      :click="onClick"
+      :focus="state.set"
+    />
 
     <template v-slot:helper>
       <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid" />
     </template>
     <template v-slot:content>
-      <Calendar :attributes="attributes" v-bind="$attrs" @dayclick="onChange" @daykeydown="onDayKeydown" />
+      <Calendar
+        :attributes="attributes"
+        v-bind="$attrs"
+        @dayclick="onChange"
+        @daykeydown="onDayKeydown"
+        @daymouseenter="onDayMouseEnter"
+      />
     </template>
   </WPopper>
 </template>
@@ -44,13 +46,14 @@ import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import useVeeValidator from '~/composables/use-vee-validator.js';
+import useDateRange from '~/composables/use-date-range.js';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
-  name: 'DatePicker',
+  name: 'DatePickerRange',
 
   inheritAttrs: false,
 
@@ -58,7 +61,7 @@ export default {
 
   props: {
     value: {
-      type: [Object, Array, Date],
+      type: Object,
       default: () => ({}),
     },
 
@@ -104,9 +107,16 @@ export default {
 
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
-    const inputValue = computed(() => props.value && formatDate(props.value, props.format));
 
     const { validatorFieldErrorMessage, hasError, isValid } = useVeeValidator(validator, props);
+
+    const { state, startDate, endDate, dateRange, normalizedDateRange, startRefId, endRefId, isReady } = useDateRange({
+      initialStartDate: props.value?.start,
+      initialEndDate: props.value?.end,
+    });
+
+    const formatedStartDate = computed(() => props.value?.start && formatDate(props.value.start, props.format));
+    const formatedEndDate = computed(() => props.value?.end && formatDate(props.value.end, props.format));
 
     const attributes = computed(() => {
       return [
@@ -117,15 +127,30 @@ export default {
             base: { fillMode: 'light' },
           },
 
-          dates: props.value,
-          // dates: { start: new Date(2022, 7, 14), end: new Date(2022, 7, 18) },
+          dates: dateRange.value,
         },
       ];
     });
 
+    const onDayMouseEnter = (event) => {
+      if (state.isStart()) return (startDate.value = event.date);
+      endDate.value = event.date;
+    };
+
     const onChange = (event) => {
-      emit('input', event.date);
-      focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
+      if (state.isStart()) {
+        startDate.value = event.date;
+        endDate.value = null;
+        emit('input', normalizedDateRange());
+        if (isReady()) isPopperVisible.value = false;
+        state.step();
+        return;
+      }
+      endDate.value = event.date;
+      emit('input', normalizedDateRange());
+      const element = document.querySelector(`[data-end-id="${endRefId}"]`);
+      element?.focus();
+      if (!startDate.value) return state.step();
       isPopperVisible.value = false;
     };
 
@@ -139,16 +164,21 @@ export default {
     };
 
     return {
+      state,
       popperRef,
-      inputValue,
+      startRefId,
+      endRefId,
       attributes,
       isPopperVisible,
       validatorFieldErrorMessage,
       hasError,
       isValid,
+      formatedStartDate,
+      formatedEndDate,
       onChange,
       onDayKeydown,
-      onClick: (event) => {
+      onDayMouseEnter,
+      onClick: () => {
         if (isPopperVisible.value) return;
         isPopperVisible.value = true;
       },

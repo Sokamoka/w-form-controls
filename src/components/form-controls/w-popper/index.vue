@@ -17,6 +17,9 @@
     >
       <slot />
     </popover-button>
+
+    <slot name="helper" />
+
     <div ref="popperRef" class="w-popper__popper">
       <transition :name="transition">
         <popover-panel

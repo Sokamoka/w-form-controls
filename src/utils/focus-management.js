@@ -58,7 +58,6 @@ export function focusIn(container, focusBehavior, loop = false) {
     } else if (nextIdx < 0 || nextIdx >= numberOfElements) return;
 
     nextElement = elements[nextIdx];
-    console.log('nextElement:', nextElement);
     nextElement.focus(focusOptions);
 
     // Try the nextElement one in line
