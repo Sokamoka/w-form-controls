@@ -28,6 +28,7 @@ const formdata = reactive({
   birthdate: null,
   nameday: null,
   check: null,
+  // check: { start: new Date(2022, 8, 12), end: new Date(2022, 8, 18) },
 });
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
@@ -214,32 +215,36 @@ export default {
       {{ formdata.check }}
       <WDatePickerRange
         v-model="formdata.check"
+        v-validate="'date_range'"
+        name="checkin"
         placement="top"
-        append-to="body"
         format="YYYY-MM-DD"
         :columns="2"
-        v-slot="{ startId, endId, startDate, endDate, click, focus }"
       >
-        <BaseInputGroup>
-          <w-input
-            v-validate="'required'"
-            name="checkin"
-            label="Check-in"
-            :data-start-id="startId"
-            v-model="startDate"
-            @click="click"
-            @focus="focus"
-          />
-          <w-input
-            v-validate="'required'"
-            name="checkout"
-            label="Check-out"
-            :data-end-id="endId"
-            v-model="endDate"
-            @click="click"
-            @focus="focus"
-          />
-        </BaseInputGroup>
+        <template v-slot:default="{ error, valid, startId, endId, startDate, endDate, click, focus }">
+          <BaseInputGroup>
+            <w-input
+              :value="startDate"
+              label="Check-in"
+              :data-start-id="startId"
+              :error="error"
+              :valid="valid"
+              readonly
+              @click="click"
+              @focus="focus"
+            />
+            <w-input
+              :value="endDate"
+              :error="error"
+              :valid="valid"
+              label="Check-out"
+              :data-end-id="endId"
+              readonly
+              @click="click"
+              @focus="focus"
+            />
+          </BaseInputGroup>
+        </template>
       </WDatePickerRange>
     </div>
 

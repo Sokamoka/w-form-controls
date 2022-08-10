@@ -58,6 +58,12 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
     element?.focus();
   });
 
+  const resetDates = () => {
+    console.log(initialStartDate);
+    startDate.value = initialStartDate;
+    endDate.value = initialEndDate;
+  };
+
   return {
     startRefId,
     endRefId,
@@ -65,6 +71,7 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
     startDate,
     endDate,
     dateRange,
+    resetDates,
     isReady,
     normalizedDateRange,
   };

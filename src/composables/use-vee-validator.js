@@ -1,35 +1,37 @@
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { pick } from 'ramda';
 
-export default function useVeeValidator(validator, props) {
+export default function useVeeValidator({ name, scope, error, valid }) {
+  const validator = inject('$validator', {});
+
   const validatorFieldFlags = computed(() => {
     const field = validator.fields.find({
-      name: props.name,
-      ...(props.scope && { scope: props.scope }),
+      name,
+      ...(scope && { scope: scope }),
     });
     return pick(['touched', 'dirty', 'valid', 'pending', 'validated'], field?.flags ?? {});
   });
 
   const validatorFieldErrorMessage = computed(() => {
-    if (props.scope) return validator.errors.first(props.name, props.scope);
-    return validator.errors.first(props.name);
+    if (scope) return validator.errors.first(name, scope);
+    return validator.errors.first(name);
   });
 
   const hasError = computed(() => {
-    const { valid, validated, touched } = validatorFieldFlags.value;
-    const fromValidator = !valid && validated && touched;
-    return props.error || fromValidator;
+    const { valid: fieldValid, validated, touched } = validatorFieldFlags.value;
+    const fromValidator = !fieldValid && validated && touched;
+    return error.value || fromValidator;
   });
 
   const isValid = computed(() => {
-    const { valid } = validatorFieldFlags.value;
-    return props.valid || valid;
+    const { valid: flagValid } = validatorFieldFlags.value;
+    return valid.value || flagValid;
   });
 
   return {
-    validatorFieldFlags,
-    validatorFieldErrorMessage,
-    hasError,
-    isValid,
+    flags: validatorFieldFlags,
+    message: validatorFieldErrorMessage,
+    error: hasError,
+    valid: isValid,
   };
 }

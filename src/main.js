@@ -1,15 +1,20 @@
-import Vue from "vue";
-import VeeValidate from "vee-validate";
-import App from "./App.vue";
-import "./assets/css/style.css";
+import Vue from 'vue';
+import VeeValidate, { Validator } from 'vee-validate';
+import App from './App.vue';
+import { dateRange } from './utils/validation-rules';
+import './assets/css/style.css';
 
 Vue.use(VeeValidate, {
-  errorBagName: "validatorErrors",
-  events: "input|blur",
+  errorBagName: 'validatorErrors',
+  events: 'input|blur',
   classes: false,
   inject: false,
 });
 
+Validator.extend('date_range', dateRange, {
+  computesRequired: true,
+});
+
 new Vue({
   render: (h) => h(App),
-}).$mount("#app");
+}).$mount('#app');

@@ -45,11 +45,12 @@
 </template>
 
 <script>
-import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, toRef } from 'vue';
 import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import ErrorIndicator from '../../error-indicator.vue';
+// import { useExternalValidation } from '../internal';
 
 export default {
   name: 'W-Input',
@@ -143,8 +144,6 @@ export default {
     const groupApi = useInputGroup();
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
-    const validator = inject('$validator', {});
-
     const modelValue = computed({
       get() {
         return props.value;
@@ -154,7 +153,16 @@ export default {
       },
     });
 
-    const { validatorFieldErrorMessage, hasError, isValid } = useVeeValidator(validator, props);
+    const {
+      message: validatorFieldErrorMessage,
+      error: hasError,
+      valid: isValid,
+    } = useVeeValidator({
+      name: props.name,
+      scope: props.scope,
+      error: computed(() => props.error),
+      valid: computed(() => props.valid),
+    });
 
     const currentErrorMessage = computed(() => {
       if (hasError.value && props.errorMessage) return props.errorMessage;
@@ -177,6 +185,18 @@ export default {
       }
     }
 
+    // const { hasExternalValidation } = useExternalValidation({
+    //   blur: (event) => emit('blur', event),
+    //   input: () => {
+    //     emit('input', modelValue);
+    //   },
+    // });
+
+    // const onBlur = (event) => {
+    //   if (hasExternalValidation) return;
+    //   emit('blur', event);
+    // };
+
     return {
       inputRef,
       modelValue,
@@ -185,8 +205,8 @@ export default {
       hasError,
       isValid,
       validatorFieldErrorMessage,
-      validator,
       currentErrorMessage,
+      // onBlur,
     };
   },
 };
