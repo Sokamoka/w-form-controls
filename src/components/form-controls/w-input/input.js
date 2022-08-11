@@ -1,5 +1,5 @@
 import { findIndex, omit, propEq } from 'ramda';
-import { computed, defineComponent, inject, provide, reactive, ref } from 'vue';
+import { computed, defineComponent, inject, onUnmounted, provide, reactive, ref, watch } from 'vue';
 import { useId } from '../../../composables/use-id';
 import { render } from '../../../utils/vnode/render';
 
@@ -257,9 +257,22 @@ export const InputGroup = defineComponent({
   },
 });
 
-export const useInputGroup = () => {
+export const useInputGroup = ({ name, message, inputId }) => {
   const api = inject(InputGroupContext, null);
-  return api;
+
+  if (api && name) {
+    watch(inputId, (id) => {
+      if (!id) return;
+
+      api.register({ id, name, message });
+    });
+
+    onUnmounted(() => api.unregister(name));
+  }
+
+  return {
+    isInGroup: Boolean(api),
+  };
 };
 
 export const useInputControl = () => {

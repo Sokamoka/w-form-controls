@@ -116,8 +116,6 @@ export default {
   },
 
   setup(props, { emit }) {
-    // const validator = inject('$validator', {});
-
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
 
@@ -139,14 +137,14 @@ export default {
     } = useVeeValidator({
       name: props.name,
       scope: props.scope,
-      error: computed(() => props.error),
+      error: props.error,
       valid: props.valid,
     });
 
     const { state, startDate, endDate, dateRange, normalizedDateRange, startRefId, endRefId, isReady, resetDates } =
       useDateRange({
-        initialStartDate: props.value?.start,
-        initialEndDate: props.value?.end,
+        initialStartDate: computed(() => props.value?.start),
+        initialEndDate: computed(() => props.value?.end),
       });
 
     const formatedStartDate = computed(() => props.value?.start && formatDate(props.value.start, props.format));
@@ -204,8 +202,7 @@ export default {
 
     watch(isPopperVisible, (visible) => {
       if (visible) return;
-      startDate.value = props.value?.start;
-      endDate.value = props.value?.end;
+      resetDates();
     });
 
     return {

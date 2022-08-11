@@ -25,8 +25,8 @@ const useRangeState = () => {
 };
 
 export default function useDaterRange({ initialStartDate = null, initialEndDate = null }) {
-  const startDate = ref(initialStartDate);
-  const endDate = ref(initialEndDate);
+  const startDate = ref(unref(initialStartDate));
+  const endDate = ref(unref(initialEndDate));
   const startRefId = useId();
   const endRefId = useId();
 
@@ -58,10 +58,20 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
     element?.focus();
   });
 
+  watch(
+    () => ({
+      start: unref(initialStartDate),
+      end: unref(initialEndDate),
+    }),
+    ({ start, end }) => {
+      startDate.value = start;
+      endDate.value = end;
+    }
+  );
+
   const resetDates = () => {
-    console.log(initialStartDate);
-    startDate.value = initialStartDate;
-    endDate.value = initialEndDate;
+    startDate.value = unref(initialStartDate);
+    endDate.value = unref(initialEndDate);
   };
 
   return {

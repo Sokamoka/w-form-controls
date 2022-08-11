@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted, ref, toRef } from 'vue';
+import { computed, ref } from 'vue';
 import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
@@ -132,16 +132,21 @@ export default {
       default: '',
     },
 
+    // todo: deletable?
     errorMessageDisabled: {
       type: Boolean,
       dafault: false,
+    },
+
+    ariaDescribedby: {
+      type: String,
+      default: '',
     },
   },
 
   setup(props, { emit }) {
     const inputRef = ref(null);
-    const isInGroup = ref(false);
-    const groupApi = useInputGroup();
+
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
     const modelValue = computed({
@@ -152,6 +157,8 @@ export default {
         emit('input', value);
       },
     });
+
+    // const ariaDescribedby = computed(() => {});
 
     const {
       message: validatorFieldErrorMessage,
@@ -169,21 +176,11 @@ export default {
       return validatorFieldErrorMessage.value;
     });
 
-    if (groupApi) {
-      isInGroup.value = true;
-
-      if (props.name) {
-        onMounted(() => {
-          const payload = {
-            id: `${inputRef.value?.id}-error`,
-            name: props.name,
-            message: currentErrorMessage,
-          };
-          groupApi.register(payload);
-        });
-        onUnmounted(() => groupApi.unregister(props.name));
-      }
-    }
+    const { isInGroup } = useInputGroup({
+      name: props.name,
+      message: currentErrorMessage,
+      inputId: computed(() => `${inputRef.value?.id}-error`),
+    });
 
     // const { hasExternalValidation } = useExternalValidation({
     //   blur: (event) => emit('blur', event),
