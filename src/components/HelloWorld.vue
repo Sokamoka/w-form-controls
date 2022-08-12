@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { format, parse } from 'date-fns';
 import { InformationCircleIcon, EyeIcon, EyeOffIcon, PhoneIcon, CalendarIcon } from '@vue-hero-icons/outline';
 import WInput from './form-controls/w-input/index.vue';
@@ -8,7 +8,6 @@ import ShowPasswordButton from './form-controls/show-password/show-password-butt
 import BaseInputGroup from './form-controls/w-input/input-group.vue';
 import WPopper from './form-controls/w-popper/index.vue';
 import useIMask from '../composables/use-imask';
-// import useIMaskModel from '../composables/use-imask-model';
 import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
 import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
@@ -23,8 +22,6 @@ const isReadonly = ref(false);
 const isDisabled = ref(false);
 const isLastItemVisible = ref(true);
 
-const nameDay = ref(null);
-
 const formdata = reactive({
   email: '',
   password: '',
@@ -34,16 +31,18 @@ const formdata = reactive({
   lastName: '',
   birthdate: null,
   nameday: null,
+  // nameday: new Date(2022, 7, 19),
   check: null,
-  phone: '36121212121',
+  phone: '36301234567',
   // check: { start: new Date(2022, 8, 12), end: new Date(2022, 8, 18) },
 });
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
 
-const { masked, unmasked } = useIMask(
+const { mask, masked, unmasked } = useIMask(
   {
     element: computed(() => unrefElement(maskedInputRef.value?.inputRef)),
+    initial: formdata.phone,
     mask: '+{36} (00) 000-0000',
   },
   {
@@ -51,28 +50,31 @@ const { masked, unmasked } = useIMask(
   }
 );
 
-const { masked: namedayMasked, unmasked: namedayUnmasked } = useIMask(
+const {
+  masked: namedayMasked,
+  typed: namedayTyped,
+} = useIMask(
   {
     element: computed(() => unrefElement(namedayInputRef.value?.inputRef)),
+    initial: formdata.nameday,
     mask: Date,
-    pattern: 'm{/}`d{/}`Y',
+    pattern: 'Y{-}`m{-}`d',
     lazy: false,
     format: function (date) {
-      console.log('format:', date);
-      return (date && format(date, 'MM/dd/yyyy')) || '';
+      return (date && format(date, 'yyyy-MM-dd')) || '';
     },
     parse: function (str) {
-      console.log('parse:', parse(str, 'MM/dd/yyyy', new Date()));
-      return parse(str, 'MM/dd/yyyy', new Date());
+      return parse(str, 'yyyy-MM-dd', new Date());
     },
     // blocks: {
-    //   d: { mask: IMask.MaskedRange, placeholderChar: 'd', from: 1, to: 31, maxLength: 2 },
-    //   m: { mask: IMask.MaskedRange, placeholderChar: 'm', from: 1, to: 12, maxLength: 2 },
     //   Y: { mask: IMask.MaskedRange, placeholderChar: 'y', from: 1900, to: 2999, maxLength: 4 },
+    //   m: { mask: IMask.MaskedRange, placeholderChar: 'm', from: 1, to: 12, maxLength: 2 },
+    //   d: { mask: IMask.MaskedRange, placeholderChar: 'd', from: 1, to: 31, maxLength: 2 },
     // },
+    // overwrite: true,
   },
   {
-    onComplete: () => (formdata.nameday = namedayUnmasked.value),
+    onComplete: () => (formdata.nameday = namedayTyped.value),
   }
 );
 
@@ -80,10 +82,7 @@ const onCustomEvent = () => {
   console.log('ON-KEYPRESS');
 };
 
-onMounted(() => {
-  masked.value = formdata.phone;
-  // el.value = maskedInputRef.value.inputRef.$el;
-});
+// onMounted(() => {});
 </script>
 
 <script>
@@ -213,18 +212,17 @@ export default {
         />
       </div>
       <div>
-        Masked: {{ namedayMasked }} Unmasked: {{ namedayUnmasked }}
         <WInput
           ref="namedayInputRef"
           v-model="namedayMasked"
-          v-validate="'required'"
+          v-validate="'required|date_format:yyyy-MM-dd'"
           name="nameday"
           label="Name day"
           helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
           helper-text-sr-only
         >
           <template v-slot:append>
-            <WDatePicker v-model="formdata.nameday" placement="bottom-end" v-slot:default="{ click }">
+            <WDatePicker v-model="namedayTyped" placement="bottom-end" v-slot:default="{ click }">
               <CalendarIcon tabindex="0" class="icon-append" @click="click" />
             </WDatePicker>
           </template>

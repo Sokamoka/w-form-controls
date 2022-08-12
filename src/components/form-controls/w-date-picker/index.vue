@@ -10,7 +10,7 @@
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
-    @leave="$emit('blur')"
+    @leave="$emit('blur', $event)"
   >
     <slot name="default" :value="inputValue" :click="onClick" :error="hasError" :valid="isValid">
       <WInput
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { computed, inject, ref, unref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
@@ -104,7 +104,7 @@ export default {
 
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
-    const inputValue = computed(() => props.value && formatDate(props.value, props.format));
+    const inputValue = computed(() => props.value && typeof props.value !== 'object' &&  formatDate(props.value, props.format));
 
     const { validatorFieldErrorMessage, hasError, isValid } = useVeeValidator(validator, props);
 

@@ -1,5 +1,6 @@
 import { ref, readonly, isRef, watch, onMounted, onUnmounted } from 'vue';
 import IMask from 'imask';
+import { omit } from 'ramda';
 
 export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   props = isRef(props) ? props : ref(props);
@@ -39,12 +40,12 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
 
   function _initMask() {
     $el = el.value;
-    const $props = props.value;
+    const $props = omit(['element', 'initial'], props.value);
 
     if (!$el || !$props?.mask) return;
 
     mask.value = IMask($el, $props).on('accept', _onAccept).on('complete', _onComplete);
-
+    if (props.value.initial) mask.value.typedValue = props.value.initial;
     _onAccept();
   }
 
@@ -59,7 +60,6 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   onUnmounted(_destroyMask);
 
   watch(unmasked, () => {
-    console.log({ unmasked });
     if (mask.value) $unmasked = mask.value.unmaskedValue = unmasked.value;
   });
 
@@ -67,7 +67,8 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
     if (mask.value) $masked = mask.value.value = masked.value;
   });
 
-  watch(typed, () => {
+  watch(typed, (v) => {
+    console.log('typed:', v);
     if (mask.value) $typed = mask.value.typedValue = typed.value;
   });
 
