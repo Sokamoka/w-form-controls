@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { computed, inject, ref } from 'vue';
+import { computed, inject, ref, unref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
@@ -58,7 +58,7 @@ export default {
 
   props: {
     value: {
-      type: [Object, Array, Date],
+      type: [Object, String, Date],
       default: () => ({}),
     },
 
@@ -118,7 +118,6 @@ export default {
           },
 
           dates: props.value,
-          // dates: { start: new Date(2022, 7, 14), end: new Date(2022, 7, 18) },
         },
       ];
     });

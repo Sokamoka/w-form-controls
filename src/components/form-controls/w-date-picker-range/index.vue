@@ -21,13 +21,20 @@
       :valid="isValid"
       :start-id="startRefId"
       :end-id="endRefId"
+      :aria-describedby="`${name}-help`"
       :click="onClick"
       :focus="state.set"
     />
 
     <template v-slot:helper>
       <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
-        <p v-show="hasError">{{ validatorFieldErrorMessage }}</p>
+        <!-- <p v-show="hasError">{{ validatorFieldErrorMessage }}</p> -->
+        <HelperText
+          :id="`${name}-help`"
+          :error="hasError"
+          :text="hasError ? validatorFieldErrorMessage : helperText"
+          :helper-sr-only="helperTextSrOnly"
+        />
       </slot>
     </template>
     <template v-slot:content>
@@ -52,6 +59,7 @@ import useDateRange from '~/composables/use-date-range.js';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
+import HelperText from '../w-input/helper-text.vue';
 // import { ExternalValidationContext } from '../internal';
 // import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
@@ -60,7 +68,7 @@ export default {
 
   inheritAttrs: false,
 
-  components: { WPopper, WInput, Calendar, CalendarIcon },
+  components: { WPopper, WInput, Calendar, CalendarIcon, HelperText },
 
   props: {
     value: {
@@ -94,11 +102,6 @@ export default {
       default: 'MM/DD/YYYY',
     },
 
-    help: {
-      type: String,
-      default: '',
-    },
-
     appendTo: {
       type: String,
       default: '',
@@ -112,6 +115,16 @@ export default {
     error: {
       type: Boolean,
       default: false,
+    },
+
+    helperText: {
+      type: String,
+      default: '',
+    },
+
+    helperTextSrOnly: {
+      type: Boolean,
+      default: true,
     },
   },
 

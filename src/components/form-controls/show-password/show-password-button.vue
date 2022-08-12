@@ -4,7 +4,7 @@
     :class="mainClasses"
     aria-label="Show Password"
     @click="change"
-    @keypress.enter.space="change"
+    @keypress.enter.space.prevent="change"
   />
 </template>
 <script>

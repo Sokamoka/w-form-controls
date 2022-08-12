@@ -46,6 +46,7 @@ h1 {
 
 .container,
 #app {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -77,4 +78,11 @@ h1 {
 
 .form-container {
   margin-bottom: 20px;
+}
+.form-container.flex {
+  display: flex;
+  gap: 15px;
+}
+.form-container.flex > div{
+  flex: 1;
 }

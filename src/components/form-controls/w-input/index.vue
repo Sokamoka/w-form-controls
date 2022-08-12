@@ -23,7 +23,7 @@
           :type="type"
           :name="name"
           :placeholder="currentPlaceholder"
-          :aria-describedby="error ? `${id}-error` : `${id}-help`"
+          :aria-describedby="ariaDescribedby || `${id}-help`"
           :aria-invalid="error ? true : null"
           v-bind="$attrs"
           v-on="$listeners"
@@ -34,13 +34,20 @@
 
       <slot name="append" />
     </InputWrapper>
-    <ErrorIndicator
+    <!-- <ErrorIndicator
       v-if="hasError && !isInGroup && !errorMessageDisabled"
       :id="`${id}-error`"
       aria-live="assertive"
       :message="currentErrorMessage"
     />
-    <p v-if="helperText" :id="`${id}-help`" :class="{ 'sr-only': helperTextHidden }">{{ helperText }}</p>
+    <p v-if="helperText" :id="`${id}-help`" :class="{ 'sr-only': helperTextSrOnly }">{{ helperText }}</p> -->
+    <HelperText
+      v-if="isHelperVisible"
+      :id="`${id}-help`"
+      :error="hasError"
+      :text="hasError ? currentErrorMessage : helperText"
+      :helper-sr-only="helperTextSrOnly"
+    />
   </InputControl>
 </template>
 
@@ -50,6 +57,7 @@ import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import ErrorIndicator from '../../error-indicator.vue';
+import HelperText from './helper-text.vue';
 // import { useExternalValidation } from '../internal';
 
 export default {
@@ -64,6 +72,7 @@ export default {
     InputWrapper,
     InputControl,
     ErrorIndicator,
+    HelperText,
   },
 
   props: {
@@ -112,9 +121,14 @@ export default {
       default: '',
     },
 
-    helperTextHidden: {
+    helperTextSrOnly: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+
+    helperTextDisabled: {
+      type: Boolean,
+      dafault: false,
     },
 
     disabled: {
@@ -130,12 +144,6 @@ export default {
     scope: {
       type: String,
       default: '',
-    },
-
-    // todo: deletable?
-    errorMessageDisabled: {
-      type: Boolean,
-      dafault: false,
     },
 
     ariaDescribedby: {
@@ -179,9 +187,15 @@ export default {
     const { isInGroup } = useInputGroup({
       name: props.name,
       message: currentErrorMessage,
-      inputId: computed(() => `${inputRef.value?.id}-error`),
+      inputId: computed(() => `${inputRef.value?.id}-help`),
     });
 
+    const isHelperVisible = computed(() => {
+      if (isInGroup) return false;
+      if (hasError) return true;
+      if (props.helperTextDisabled) return false;
+      return false;
+    });
     // const { hasExternalValidation } = useExternalValidation({
     //   blur: (event) => emit('blur', event),
     //   input: () => {
@@ -203,7 +217,9 @@ export default {
       isValid,
       validatorFieldErrorMessage,
       currentErrorMessage,
-      // onBlur,
+      isHelperVisible,
+      onBlur: (e) => console.log('blur:', e),
+      onFocusOut: () => console.log('focusout'),
     };
   },
 };

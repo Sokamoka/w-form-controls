@@ -1,5 +1,5 @@
-import { ref, readonly, isRef, watch, onMounted, onUnmounted } from "vue";
-import IMask from "imask";
+import { ref, readonly, isRef, watch, onMounted, onUnmounted } from 'vue';
+import IMask from 'imask';
 
 export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   props = isRef(props) ? props : ref(props);
@@ -19,20 +19,20 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
     $masked = masked.value = mask.value.value;
 
     if (emit) {
-      emit("accept", $masked);
-      emit("accept:masked", $masked);
-      emit("accept:typed", $typed);
-      emit("accept:unmasked", $unmasked);
+      emit('accept', $masked);
+      emit('accept:masked', $masked);
+      emit('accept:typed', $typed);
+      emit('accept:unmasked', $unmasked);
     }
     if (onAccept) onAccept();
   }
 
   function _onComplete() {
     if (emit) {
-      emit("complete", $masked);
-      emit("complete:masked", $masked);
-      emit("complete:typed", $typed);
-      emit("complete:unmasked", $unmasked);
+      emit('complete', $masked);
+      emit('complete:masked', $masked);
+      emit('complete:typed', $typed);
+      emit('complete:unmasked', $unmasked);
     }
     if (onComplete) onComplete();
   }
@@ -43,9 +43,7 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
 
     if (!$el || !$props?.mask) return;
 
-    mask.value = IMask($el, $props)
-      .on("accept", _onAccept)
-      .on("complete", _onComplete);
+    mask.value = IMask($el, $props).on('accept', _onAccept).on('complete', _onComplete);
 
     _onAccept();
   }
@@ -61,6 +59,7 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   onUnmounted(_destroyMask);
 
   watch(unmasked, () => {
+    console.log({ unmasked });
     if (mask.value) $unmasked = mask.value.unmaskedValue = unmasked.value;
   });
 
@@ -71,6 +70,13 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   watch(typed, () => {
     if (mask.value) $typed = mask.value.typedValue = typed.value;
   });
+
+  watch(
+    () => props.value.element,
+    (element) => {
+      el.value = element;
+    }
+  );
 
   watch([el, props], () => {
     const $newEl = el.value;

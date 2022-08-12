@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { format, parse } from 'date-fns';
 import { InformationCircleIcon, EyeIcon, EyeOffIcon, PhoneIcon, CalendarIcon } from '@vue-hero-icons/outline';
 import WInput from './form-controls/w-input/index.vue';
 import ShowPassword from './form-controls/show-password/index.vue';
@@ -7,16 +8,22 @@ import ShowPasswordButton from './form-controls/show-password/show-password-butt
 import BaseInputGroup from './form-controls/w-input/input-group.vue';
 import WPopper from './form-controls/w-popper/index.vue';
 import useIMask from '../composables/use-imask';
+// import useIMaskModel from '../composables/use-imask-model';
 import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
 import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
+import HelperText from './form-controls/w-input/helper-text.vue';
+import { unrefElement } from '@vueuse/core';
 
 const maskedInputRef = ref(null);
+const namedayInputRef = ref(null);
 const hasError = ref(false);
 const isValid = ref(false);
 const isReadonly = ref(false);
 const isDisabled = ref(false);
 const isLastItemVisible = ref(true);
+
+const nameDay = ref(null);
 
 const formdata = reactive({
   email: '',
@@ -28,21 +35,54 @@ const formdata = reactive({
   birthdate: null,
   nameday: null,
   check: null,
+  phone: '36121212121',
   // check: { start: new Date(2022, 8, 12), end: new Date(2022, 8, 18) },
 });
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
 
-const { el, masked, unmasked } = useIMask({
-  mask: '+{36} (00) 000-0000',
-});
+const { masked, unmasked } = useIMask(
+  {
+    element: computed(() => unrefElement(maskedInputRef.value?.inputRef)),
+    mask: '+{36} (00) 000-0000',
+  },
+  {
+    onComplete: () => (formdata.phone = unmasked.value),
+  }
+);
+
+const { masked: namedayMasked, unmasked: namedayUnmasked } = useIMask(
+  {
+    element: computed(() => unrefElement(namedayInputRef.value?.inputRef)),
+    mask: Date,
+    pattern: 'm{/}`d{/}`Y',
+    lazy: false,
+    format: function (date) {
+      console.log('format:', date);
+      return (date && format(date, 'MM/dd/yyyy')) || '';
+    },
+    parse: function (str) {
+      console.log('parse:', parse(str, 'MM/dd/yyyy', new Date()));
+      return parse(str, 'MM/dd/yyyy', new Date());
+    },
+    // blocks: {
+    //   d: { mask: IMask.MaskedRange, placeholderChar: 'd', from: 1, to: 31, maxLength: 2 },
+    //   m: { mask: IMask.MaskedRange, placeholderChar: 'm', from: 1, to: 12, maxLength: 2 },
+    //   Y: { mask: IMask.MaskedRange, placeholderChar: 'y', from: 1900, to: 2999, maxLength: 4 },
+    // },
+  },
+  {
+    onComplete: () => (formdata.nameday = namedayUnmasked.value),
+  }
+);
 
 const onCustomEvent = () => {
   console.log('ON-KEYPRESS');
 };
 
 onMounted(() => {
-  el.value = maskedInputRef.value.inputRef.$el;
+  masked.value = formdata.phone;
+  // el.value = maskedInputRef.value.inputRef.$el;
 });
 </script>
 
@@ -80,6 +120,14 @@ export default {
           Last Item Visible
         </label>
       </div>
+    </div>
+
+    <div class="form-container">
+      No helper text:<HelperText></HelperText>
+      <HelperText text="Helper text visible"></HelperText>
+      <HelperText text="Has error" :error="true"></HelperText>
+      Hidden: <HelperText text="Helper text sr only" :helper-sr-only="true"></HelperText>
+      <HelperText text="Helper text sr only and has error" :sr-only="true" :error="true"></HelperText>
     </div>
     <div class="form-container">
       <w-input
@@ -124,7 +172,7 @@ export default {
         v-model="formdata.password2"
         v-validate="'required|min:6'"
         name="password2"
-        data-vv-as="Data as Password"
+        data-vv-as="From data-vv-as Password"
         class="test-class"
         label="Password"
         :type="passwordFieldType"
@@ -152,28 +200,36 @@ export default {
       </w-input>
     </div>
 
-    <div class="form-container">
-      <WDatePicker v-model="formdata.nameday" v-validate="'required'" name="nameday" placement="bottom">
-        <template v-slot:default="{ value, click, error, valid }">
-          <WInput
-            v-model="value"
-            label="Name day"
-            :valid="valid"
-            :error="error"
-            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-            readonly
-            error-message-disabled
-            @click.stop="click"
-          >
-            <template v-slot:append>
-              <CalendarIcon class="icon-append" />
-            </template>
-          </WInput>
-        </template>
-        <template v-slot:helper="{ error, message }">
-          <p v-if="error">{{ message }}</p>
-        </template>
-      </WDatePicker>
+    <div class="form-container flex">
+      <div>
+        <WDatePicker
+          v-model="formdata.birthdate"
+          v-validate="'required'"
+          name="birthdate"
+          label="Birth date"
+          placement="bottom-end"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          append-to="body"
+        />
+      </div>
+      <div>
+        Masked: {{ namedayMasked }} Unmasked: {{ namedayUnmasked }}
+        <WInput
+          ref="namedayInputRef"
+          v-model="namedayMasked"
+          v-validate="'required'"
+          name="nameday"
+          label="Name day"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          helper-text-sr-only
+        >
+          <template v-slot:append>
+            <WDatePicker v-model="formdata.nameday" placement="bottom-end" v-slot:default="{ click }">
+              <CalendarIcon tabindex="0" class="icon-append" @click="click" />
+            </WDatePicker>
+          </template>
+        </WInput>
+      </div>
     </div>
 
     <div class="form-container">
@@ -199,7 +255,7 @@ export default {
       </w-popper>
     </div>
 
-    <div class="form-container">
+    <!-- <div class="form-container">
       <WDatePicker
         v-model="formdata.birthdate"
         v-validate="'required'"
@@ -209,7 +265,7 @@ export default {
         helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
         append-to="body"
       />
-    </div>
+    </div> -->
 
     <div class="form-container">
       {{ formdata.check }}
@@ -220,8 +276,10 @@ export default {
         placement="top"
         format="YYYY-MM-DD"
         :columns="2"
+        helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+        :helper-text-sr-only="true"
       >
-        <template v-slot:default="{ error, valid, startId, endId, startDate, endDate, click, focus }">
+        <template v-slot:default="{ error, valid, ariaDescribedby, startId, endId, startDate, endDate, click, focus }">
           <BaseInputGroup>
             <w-input
               :value="startDate"
@@ -229,6 +287,7 @@ export default {
               :data-start-id="startId"
               :error="error"
               :valid="valid"
+              :aria-describedby="ariaDescribedby"
               readonly
               @click="click"
               @focus="focus"
@@ -239,6 +298,7 @@ export default {
               :valid="valid"
               label="Check-out"
               :data-end-id="endId"
+              :aria-describedby="ariaDescribedby"
               readonly
               @click="click"
               @focus="focus"

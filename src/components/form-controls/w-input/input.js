@@ -1,3 +1,4 @@
+import { unrefElement } from '@vueuse/core';
 import { findIndex, omit, propEq } from 'ramda';
 import { computed, defineComponent, inject, onUnmounted, provide, reactive, ref, watch } from 'vue';
 import { useId } from '../../../composables/use-id';
@@ -80,6 +81,8 @@ export const InputWrapper = defineComponent({
     };
 
     const onFocusOut = (event) => {
+      if (unrefElement(inputWrapperRef).contains(event.relatedTarget)) return;
+      console.log('input:blur-focusout');
       isOnFocus.value = false;
       emit('blur', event);
     };
