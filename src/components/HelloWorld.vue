@@ -50,10 +50,7 @@ const { mask, masked, unmasked } = useIMask(
   }
 );
 
-const {
-  masked: namedayMasked,
-  typed: namedayTyped,
-} = useIMask(
+const { masked: namedayMasked, typed: namedayTyped } = useIMask(
   {
     element: computed(() => unrefElement(namedayInputRef.value?.inputRef)),
     initial: formdata.nameday,
@@ -205,11 +202,25 @@ export default {
           v-model="formdata.birthdate"
           v-validate="'required'"
           name="birthdate"
-          label="Birth date"
-          placement="bottom-end"
+          placement="bottom-start"
           helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
           append-to="body"
-        />
+          v-slot:default="{ value, error, valid, click }"
+        >
+          <w-input
+            v-model="value"
+            label="Birth date"
+            :error="error"
+            :valid="valid"
+            readonly
+            helper-text-disabled
+            @click="click"
+          >
+            <template v-slot:append>
+              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+            </template>
+          </w-input>
+        </WDatePicker>
       </div>
       <div>
         <WInput
@@ -223,7 +234,7 @@ export default {
         >
           <template v-slot:append>
             <WDatePicker v-model="namedayTyped" placement="bottom-end" v-slot:default="{ click }">
-              <CalendarIcon tabindex="0" class="icon-append" @click="click" />
+              <CalendarIcon tabindex="0" class="icon-append is-button" @click="click" />
             </WDatePicker>
           </template>
         </WInput>
@@ -252,18 +263,6 @@ export default {
         </BaseInputGroup>
       </w-popper>
     </div>
-
-    <!-- <div class="form-container">
-      <WDatePicker
-        v-model="formdata.birthdate"
-        v-validate="'required'"
-        name="birthdate"
-        label="Birth date"
-        placement="bottom-end"
-        helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-        append-to="body"
-      />
-    </div> -->
 
     <div class="form-container">
       {{ formdata.check }}
@@ -342,5 +341,19 @@ export default {
   &.is-text {
     stroke: $color-pink-basic;
   }
+}
+.is-button {
+  border-radius: 100%;
+  background-color: $color-gray-lighter;
+  outline: 8px solid $color-gray-lighter;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-gray-light;
+    outline-color: $color-gray-light;
+  }
+}
+.is-helper {
+  outline: none;
 }
 </style>

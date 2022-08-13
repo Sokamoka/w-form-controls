@@ -1,7 +1,7 @@
 import { computed, inject } from 'vue';
 import { pick } from 'ramda';
 
-export default function useVeeValidator({ name, scope, error, valid }) {
+export default function useVeeValidator({ name, scope, error = false, valid = false }) {
   const validator = inject('$validator', {});
 
   const validatorFieldFlags = computed(() => {
@@ -18,8 +18,8 @@ export default function useVeeValidator({ name, scope, error, valid }) {
   });
 
   const hasError = computed(() => {
-    const { valid: fieldValid, validated, touched } = validatorFieldFlags.value;
-    const fromValidator = !fieldValid && validated && touched;
+    const { valid: fieldValid, validated } = validatorFieldFlags.value;
+    const fromValidator = !fieldValid && validated;
     return error.value || fromValidator;
   });
 

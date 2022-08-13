@@ -192,8 +192,8 @@ export default {
 
     const isHelperVisible = computed(() => {
       if (isInGroup) return false;
-      if (hasError) return true;
       if (props.helperTextDisabled) return false;
+      if (hasError.value) return true;
       return false;
     });
     // const { hasExternalValidation } = useExternalValidation({

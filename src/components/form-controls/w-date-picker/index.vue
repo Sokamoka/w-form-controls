@@ -30,7 +30,14 @@
     </slot>
 
     <template v-slot:helper>
-      <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid" />
+      <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
+        <HelperText
+          :id="`${name}-help`"
+          :error="hasError"
+          :text="hasError ? validatorFieldErrorMessage : helperText"
+          :helper-sr-only="helperTextSrOnly"
+        />
+      </slot>
     </template>
     <template v-slot:content>
       <Calendar :attributes="attributes" v-bind="$attrs" @dayclick="onChange" @daykeydown="onDayKeydown" />
@@ -39,22 +46,24 @@
 </template>
 
 <script>
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import useVeeValidator from '~/composables/use-vee-validator.js';
+import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
+import { isDate } from 'date-fns';
+import { PLACEMENTS } from '../w-popper/internal';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
-import { PLACEMENTS } from '../w-popper/internal';
-import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
+import HelperText from '../w-input/helper-text.vue';
 
 export default {
   name: 'DatePicker',
 
   inheritAttrs: false,
 
-  components: { WPopper, WInput, Calendar, CalendarIcon },
+  components: { WPopper, WInput, Calendar, CalendarIcon, HelperText },
 
   props: {
     value: {
@@ -88,7 +97,7 @@ export default {
       default: 'MM/DD/YYYY',
     },
 
-    help: {
+    helperText: {
       type: String,
       default: '',
     },
@@ -97,16 +106,30 @@ export default {
       type: String,
       default: '',
     },
+
+    helperTextSrOnly: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   setup(props, { emit }) {
-    const validator = inject('$validator', {});
-
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
-    const inputValue = computed(() => props.value && typeof props.value !== 'object' &&  formatDate(props.value, props.format));
+    const inputValue = computed(() => {
+      // Todo: input mask miatt kell
+      if (!isDate(props.value)) return '';
+      return formatDate(props.value, props.format);
+    });
 
-    const { validatorFieldErrorMessage, hasError, isValid } = useVeeValidator(validator, props);
+    const {
+      message: validatorFieldErrorMessage,
+      error: hasError,
+      valid: isValid,
+    } = useVeeValidator({
+      name: props.name,
+      scope: props.scope,
+    });
 
     const attributes = computed(() => {
       return [
@@ -114,7 +137,6 @@ export default {
           highlight: {
             color: 'pink',
             fillMode: 'light',
-            base: { fillMode: 'light' },
           },
 
           dates: props.value,

@@ -28,7 +28,6 @@
 
     <template v-slot:helper>
       <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
-        <!-- <p v-show="hasError">{{ validatorFieldErrorMessage }}</p> -->
         <HelperText
           :id="`${name}-help`"
           :error="hasError"

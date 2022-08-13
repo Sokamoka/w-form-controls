@@ -82,7 +82,6 @@ export const InputWrapper = defineComponent({
 
     const onFocusOut = (event) => {
       if (unrefElement(inputWrapperRef).contains(event.relatedTarget)) return;
-      console.log('input:blur-focusout');
       isOnFocus.value = false;
       emit('blur', event);
     };

@@ -68,7 +68,6 @@ export default function useIMask(props, { emit, onAccept, onComplete } = {}) {
   });
 
   watch(typed, (v) => {
-    console.log('typed:', v);
     if (mask.value) $typed = mask.value.typedValue = typed.value;
   });
 
