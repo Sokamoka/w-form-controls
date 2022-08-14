@@ -12,22 +12,7 @@
     @update:shown="onPopperVisibleUpdate"
     @leave="$emit('blur', $event)"
   >
-    <slot name="default" :value="inputValue" :click="onClick" :error="hasError" :valid="isValid">
-      <WInput
-        v-model="inputValue"
-        :label="label"
-        :help="help"
-        :name="name"
-        :scope="scope"
-        readonly
-        @focus="$emit('focus')"
-        @click.stop="onClick"
-      >
-        <template v-slot:append>
-          <CalendarIcon class="icon" />
-        </template>
-      </WInput>
-    </slot>
+    <slot name="default" :value="inputValue" :click="onClick" :error="hasError" :valid="isValid" />
 
     <template v-slot:helper>
       <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
@@ -49,13 +34,12 @@
 import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
-import { CalendarIcon } from '@vue-hero-icons/outline';
 import useVeeValidator from '~/composables/use-vee-validator.js';
+import { useExternalPopperProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 import { isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
 import WPopper from '../w-popper/index.vue';
-import WInput from '../w-input/index.vue';
 import HelperText from '../w-input/helper-text.vue';
 
 export default {
@@ -63,7 +47,7 @@ export default {
 
   inheritAttrs: false,
 
-  components: { WPopper, WInput, Calendar, CalendarIcon, HelperText },
+  components: { WPopper, Calendar, HelperText },
 
   props: {
     value: {
@@ -144,8 +128,14 @@ export default {
       ];
     });
 
+    const { inputEvent } = useExternalPopperProvider({
+      value: props.value,
+      contentRef: computed(() => popperRef?.value?.popperRef),
+    });
+
     const onChange = (event) => {
       emit('input', event.date);
+      // inputEvent();
       focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
       isPopperVisible.value = false;
     };

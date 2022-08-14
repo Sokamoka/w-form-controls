@@ -197,7 +197,7 @@ export default {
     </div>
 
     <div class="form-container flex">
-      <div>
+      <!-- <div>
         <WDatePicker
           v-model="formdata.birthdate"
           v-validate="'required'"
@@ -209,6 +209,31 @@ export default {
         >
           <w-input
             v-model="value"
+            label="Birth date"
+            :error="error"
+            :valid="valid"
+            readonly
+            helper-text-disabled
+            @click="click"
+          >
+            <template v-slot:append>
+              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+            </template>
+          </w-input>
+        </WDatePicker>
+      </div> -->
+      <div>
+        <WDatePicker
+          v-model="formdata.birthdate"
+          placement="bottom-start"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          append-to="body"
+          v-slot:default="{ value, error, valid, click }"
+        >
+          <w-input
+            :value="value"
+            v-validate="'required'"
+            name="birthdate"
             label="Birth date"
             :error="error"
             :valid="valid"

@@ -13,7 +13,7 @@
       :disabled="disabled"
       :readonly="readonly"
       @focus="$emit('focus', $event)"
-      @blur="$emit('blur', $event)"
+      @blur="onBlur"
     >
       <slot name="prepend" />
 
@@ -58,7 +58,7 @@ import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } fro
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import ErrorIndicator from '../../error-indicator.vue';
 import HelperText from './helper-text.vue';
-// import { useExternalValidation } from '../internal';
+import { useExternalPopper } from '../internal';
 
 export default {
   name: 'W-Input',
@@ -166,8 +166,6 @@ export default {
       },
     });
 
-    // const ariaDescribedby = computed(() => {});
-
     const {
       message: validatorFieldErrorMessage,
       error: hasError,
@@ -196,17 +194,20 @@ export default {
       if (hasError.value) return true;
       return false;
     });
-    // const { hasExternalValidation } = useExternalValidation({
-    //   blur: (event) => emit('blur', event),
-    //   input: () => {
-    //     emit('input', modelValue);
-    //   },
-    // });
 
-    // const onBlur = (event) => {
-    //   if (hasExternalValidation) return;
-    //   emit('blur', event);
-    // };
+    const { api } = useExternalPopper({
+      value: computed(() => props.value),
+      input: (value) => {
+        console.log('CALL-EMIT:', value);
+        emit('input', value);
+      },
+    });
+
+    const onBlur = (event) => {
+      console.log('check', api && api.check(event));
+      if (api && api.check(event)) return;
+      emit('blur', event);
+    };
 
     return {
       inputRef,
@@ -218,7 +219,8 @@ export default {
       validatorFieldErrorMessage,
       currentErrorMessage,
       isHelperVisible,
-      onBlur: (e) => console.log('blur:', e),
+      onBlur,
+      // onBlur: (e) => console.log('blur:', e),
       onFocusOut: () => console.log('focusout'),
     };
   },
