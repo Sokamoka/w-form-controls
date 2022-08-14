@@ -18,8 +18,8 @@
       <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
         <HelperText
           :id="`${name}-help`"
-          :error="hasError"
-          :text="hasError ? validatorFieldErrorMessage : helperText"
+          :error="error"
+          :text="error ? errorMessage : helperText"
           :helper-sr-only="helperTextSrOnly"
         />
       </slot>
@@ -93,7 +93,17 @@ export default {
 
     helperTextSrOnly: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+
+    error: {
+      type: Boolean,
+      default: false,
+    },
+
+    errorMessage: {
+      type: String,
+      default: '',
     },
   },
 
@@ -135,7 +145,6 @@ export default {
 
     const onChange = (event) => {
       emit('input', event.date);
-      // inputEvent();
       focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
       isPopperVisible.value = false;
     };
@@ -159,7 +168,7 @@ export default {
       isValid,
       onChange,
       onDayKeydown,
-      onClick: (event) => {
+      onClick: () => {
         if (isPopperVisible.value) return;
         isPopperVisible.value = true;
       },

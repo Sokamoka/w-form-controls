@@ -12,6 +12,7 @@ import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
 import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
 import HelperText from './form-controls/w-input/helper-text.vue';
+import { ValidationProvider } from './form-controls/validation-provider';
 import { unrefElement } from '@vueuse/core';
 
 const maskedInputRef = ref(null);
@@ -194,6 +195,44 @@ export default {
           />
         </template>
       </w-input>
+    </div>
+    <div class="form-container flex">
+      <div>
+        <validation-provider
+          :value="formdata.birthdate"
+          v-validate="'required'"
+          name="birthdate2"
+          error-message="Costum error message"
+          v-slot:default="{ error, valid, message, inputEvents: { input, blur } }"
+        >
+          <w-date-picker
+            v-model="formdata.birthdate"
+            placement="bottom-start"
+            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+            :error="error"
+            :error-message="message"
+            append-to="body"
+            @input="input"
+            @blur="blur"
+          >
+            <template v-slot:default="{ value, click }">
+              <w-input
+                v-model="value"
+                label="Birth date"
+                :error="error"
+                :valid="valid"
+                readonly
+                helper-text-disabled
+                @click="click"
+              >
+                <template v-slot:append>
+                  <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+                </template>
+              </w-input>
+            </template>
+          </w-date-picker>
+        </validation-provider>
+      </div>
     </div>
 
     <div class="form-container flex">
