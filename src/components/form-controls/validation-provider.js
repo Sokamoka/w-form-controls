@@ -1,7 +1,6 @@
 import { pick } from 'ramda';
 import { computed, defineComponent, inject, watch } from 'vue';
 import { render } from '../../utils/vnode/render';
-import { useCollectErrorMessages } from './internal';
 
 export const ValidationProvider = defineComponent({
   name: 'ValidationProvider',
@@ -58,8 +57,6 @@ export const ValidationProvider = defineComponent({
     watch(modelValue, () => {
       emit('input');
     });
-
-    useCollectErrorMessages({ name: props.name, message: validatorFieldErrorMessage });
 
     return {
       flags: validatorFieldFlags,

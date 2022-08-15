@@ -5,7 +5,6 @@
       :class="[
         'w-input-wrapper',
         {
-          'is-group': isInGroup,
           'is-disabled': disabled,
           'is-error': hasError,
         },
@@ -34,13 +33,6 @@
 
       <slot name="append" />
     </InputWrapper>
-    <!-- <ErrorIndicator
-      v-if="hasError && !isInGroup && !errorMessageDisabled"
-      :id="`${id}-error`"
-      aria-live="assertive"
-      :message="currentErrorMessage"
-    />
-    <p v-if="helperText" :id="`${id}-help`" :class="{ 'sr-only': helperTextSrOnly }">{{ helperText }}</p> -->
     <HelperText
       v-if="isHelperVisible"
       :id="`${id}-help`"
@@ -52,11 +44,10 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { CheckIcon } from '@vue-hero-icons/outline';
-import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } from './input';
+import { InputControl, InputWrapper, InputInput, InputLabel } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
-import ErrorIndicator from '../../error-indicator.vue';
 import HelperText from './helper-text.vue';
 import { useExpandedField } from '../internal';
 
@@ -69,10 +60,9 @@ export default {
     CheckIcon,
     InputLabel,
     InputInput,
+    HelperText,
     InputWrapper,
     InputControl,
-    ErrorIndicator,
-    HelperText,
   },
 
   props: {
@@ -155,6 +145,8 @@ export default {
   setup(props, { emit }) {
     const inputRef = ref(null);
 
+    const internalValue = ref('');
+
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
     const modelValue = computed({
@@ -162,6 +154,8 @@ export default {
         return props.value;
       },
       set(value) {
+        console.log(value);
+        internalValue.value = value;
         emit('input', value);
       },
     });
@@ -182,14 +176,19 @@ export default {
       return validatorFieldErrorMessage.value;
     });
 
-    const { isInGroup } = useInputGroup({
-      name: props.name,
-      message: currentErrorMessage,
-      inputId: computed(() => `${inputRef.value?.id}-help`),
-    });
+    // VeeValidate miatt kell, ha változik a value
+    watch(
+      () => props.value,
+      (value) => {
+        // console.log({ name: props.name, value, internalValue: internalValue.value, model: modelValue.value });
+        if (value === internalValue.value) return;
+        // console.log('W-value', value);
+        emit('input', value);
+      }
+    );
 
-    const { api } = useExpandedField({
-      value: modelValue,
+    const expandedField = useExpandedField({
+      value: computed(() => props.value),
       name: props.name,
       message: currentErrorMessage,
       inputId: computed(() => `${inputRef.value?.id}-help`),
@@ -199,16 +198,15 @@ export default {
     });
 
     const isHelperVisible = computed(() => {
-      if (isInGroup) return false;
-      if (api) return false;
+      if (expandedField) return false;
       if (props.helperTextDisabled) return false;
       if (hasError.value) return true;
       return false;
     });
 
     const onBlur = (event) => {
-      console.log('check', api?.check(event));
-      if (api?.check(event)) return;
+      console.log('check', expandedField?.check(event));
+      if (expandedField?.check(event)) return;
       emit('blur', event);
     };
 
@@ -216,15 +214,12 @@ export default {
       inputRef,
       modelValue,
       currentPlaceholder,
-      isInGroup,
       hasError,
       isValid,
       validatorFieldErrorMessage,
       currentErrorMessage,
       isHelperVisible,
       onBlur,
-      // onBlur: (e) => console.log('blur:', e),
-      onFocusOut: () => console.log('focusout'),
     };
   },
 };

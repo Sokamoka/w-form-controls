@@ -1,8 +1,9 @@
+import { computed, defineComponent, inject, provide, reactive, ref } from 'vue';
 import { unrefElement } from '@vueuse/core';
-import { findIndex, omit, propEq } from 'ramda';
-import { computed, defineComponent, inject, onUnmounted, provide, reactive, ref, watch } from 'vue';
+import { omit } from 'ramda';
 import { useId } from '../../../composables/use-id';
 import { render } from '../../../utils/vnode/render';
+import { useExpandedFieldProvider } from '../internal';
 
 export const InputControl = defineComponent({
   name: 'InputControl',
@@ -227,27 +228,16 @@ export const InputGroup = defineComponent({
   name: 'InputGroup',
 
   setup() {
-    const inputs = ref([]);
-    const api = {
-      inputs,
-      register: (item) => inputs.value.push(item),
-      unregister: (name) => {
-        const index = findIndex(propEq('name', name))(inputs.value);
-        if (index === -1) return;
-        inputs.value.splice(index, 1);
-      },
-    };
-
-    provide(InputGroupContext, api);
+    const { fields } = useExpandedFieldProvider({});
 
     return {
-      inputs,
+      fields,
     };
   },
 
   render() {
     const data = { as: 'div' };
-    const slot = { errors: this.inputs };
+    const slot = { errors: this.fields };
     const slots = this.$scopedSlots;
 
     return render({
@@ -259,23 +249,23 @@ export const InputGroup = defineComponent({
   },
 });
 
-export const useInputGroup = ({ name, message, inputId }) => {
-  const api = inject(InputGroupContext, null);
+// export const useInputGroup = ({ name, message, inputId }) => {
+//   const api = inject(InputGroupContext, null);
 
-  if (api && name) {
-    watch(inputId, (id) => {
-      if (!id) return;
+//   if (api && name) {
+//     watch(inputId, (id) => {
+//       if (!id) return;
 
-      api.register({ id, name, message });
-    });
+//       api.register({ id, name, message });
+//     });
 
-    onUnmounted(() => api.unregister(name));
-  }
+//     onUnmounted(() => api.unregister(name));
+//   }
 
-  return {
-    isInGroup: Boolean(api),
-  };
-};
+//   return {
+//     isInGroup: Boolean(api),
+//   };
+// };
 
 export const useInputControl = () => {
   const control = inject(InputControlContext, null);
@@ -283,5 +273,5 @@ export const useInputControl = () => {
 };
 
 const InputContext = Symbol('InputContext');
-const InputGroupContext = Symbol('InputGroupContext');
+// const InputGroupContext = Symbol('InputGroupContext');
 const InputControlContext = Symbol('InputControlContext');

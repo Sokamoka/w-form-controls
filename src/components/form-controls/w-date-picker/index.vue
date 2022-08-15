@@ -15,11 +15,12 @@
     <slot name="default" :value="inputValue" :click="onClick" />
 
     <template v-slot:helper>
-      <div>
+      <div v-if="!helperTextDisabled">
         <slot name="helper">
           <template v-for="{ helperText, helperTextSrOnly, message, name, id } in fields">
             <HelperText
               v-if="message || helperText"
+              :key="name"
               :id="id"
               :error="Boolean(message)"
               :text="message ? message : helperText"
@@ -41,7 +42,7 @@
 import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
-import { useErrorMessageProvider, useExpandedFieldProvider } from '../internal';
+import { useExpandedFieldProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 import { isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
@@ -98,20 +99,10 @@ export default {
       default: '',
     },
 
-    helperTextSrOnly: {
+    helperTextDisabled: {
       type: Boolean,
       default: false,
     },
-
-    // error: {
-    //   type: Boolean,
-    //   default: false,
-    // },
-
-    // errorMessage: {
-    //   type: String,
-    //   default: '',
-    // },
   },
 
   setup(props, { emit }) {
@@ -122,17 +113,6 @@ export default {
       if (!isDate(props.value)) return '';
       return formatDate(props.value, props.format);
     });
-
-    const { messages } = useErrorMessageProvider();
-
-    // const {
-    //   message: validatorFieldErrorMessage,
-    //   error: hasError,
-    //   valid: isValid,
-    // } = useVeeValidator({
-    //   name: props.name,
-    //   scope: props.scope,
-    // });
 
     const attributes = computed(() => {
       return [
@@ -147,8 +127,7 @@ export default {
       ];
     });
 
-    const { fields, errors } = useExpandedFieldProvider({
-      // value: props.value,
+    const { fields } = useExpandedFieldProvider({
       contentRef: computed(() => popperRef?.value?.popperRef),
     });
 
@@ -172,12 +151,7 @@ export default {
       inputValue,
       attributes,
       isPopperVisible,
-      messages,
       fields,
-      errors,
-      // validatorFieldErrorMessage,
-      // hasError,
-      // isValid,
       onChange,
       onDayKeydown,
       onClick: () => {

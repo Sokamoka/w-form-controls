@@ -40,7 +40,7 @@ const formdata = reactive({
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
 
-const { mask, masked, unmasked } = useIMask(
+const { masked, unmasked } = useIMask(
   {
     element: computed(() => unrefElement(maskedInputRef.value?.inputRef)),
     initial: formdata.phone,
@@ -211,6 +211,7 @@ export default {
             name="birthdate"
             label="Birth date"
             helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+            helper-text-sr-only
             readonly
             @click="click"
           >
@@ -301,6 +302,34 @@ export default {
           </BaseInputGroup>
         </template>
       </WDatePickerRange>
+    </div>
+
+    <div class="form-container">
+      <BaseInputGroup>
+        <w-input v-model="formdata.firstName" label="Name" />
+        <w-date-picker
+          v-model="formdata.birthdate"
+          placement="bottom-start"
+          append-to="body"
+          helper-text-disabled
+          v-slot:default="{ value, click }"
+        >
+          <w-input
+            :value="value"
+            v-validate="'required'"
+            name="birthdate-group"
+            label="Birth date"
+            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+            helper-text-sr-only
+            readonly
+            @click="click"
+          >
+            <template v-slot:append>
+              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+            </template>
+          </w-input>
+        </w-date-picker>
+      </BaseInputGroup>
     </div>
 
     <div class="form-container">

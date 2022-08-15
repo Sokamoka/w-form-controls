@@ -57,7 +57,6 @@ import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
 import HelperText from '../w-input/helper-text.vue';
-import { useErrorMessageProvider } from '../internal';
 // import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
