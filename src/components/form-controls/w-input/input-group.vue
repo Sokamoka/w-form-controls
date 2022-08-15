@@ -33,6 +33,10 @@ export default {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
+.input-group > div {
+  flex: 1;
+}
+
 .input-group > div .w-input-wrapper {
   border: none;
   border-right: 1px solid $color-gray-basic;

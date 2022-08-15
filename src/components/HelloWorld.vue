@@ -5,14 +5,13 @@ import { InformationCircleIcon, EyeIcon, EyeOffIcon, PhoneIcon, CalendarIcon } f
 import WInput from './form-controls/w-input/index.vue';
 import ShowPassword from './form-controls/show-password/index.vue';
 import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
-import BaseInputGroup from './form-controls/w-input/input-group.vue';
+import WInputGroup from './form-controls/w-input/input-group.vue';
 import WPopper from './form-controls/w-popper/index.vue';
 import useIMask from '../composables/use-imask';
 import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
 import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
 import HelperText from './form-controls/w-input/helper-text.vue';
-import { ValidationProvider } from './form-controls/validation-provider';
 import { unrefElement } from '@vueuse/core';
 
 const maskedInputRef = ref(null);
@@ -242,7 +241,7 @@ export default {
 
     <div class="form-container">
       <w-popper content="Please add valid characters" :triggers="['focusWithin']">
-        <BaseInputGroup>
+        <w-input-group>
           <w-input
             v-model="formdata.firstName"
             v-validate="'required'"
@@ -259,7 +258,7 @@ export default {
             label="Last name"
             error-message="Custom required error message"
           />
-        </BaseInputGroup>
+        </w-input-group>
       </w-popper>
     </div>
 
@@ -267,8 +266,6 @@ export default {
       {{ formdata.check }}
       <WDatePickerRange
         v-model="formdata.check"
-        v-validate="'date_range'"
-        name="checkin"
         placement="top"
         format="YYYY-MM-DD"
         :columns="2"
@@ -276,13 +273,13 @@ export default {
         :helper-text-sr-only="true"
       >
         <template v-slot:default="{ error, valid, ariaDescribedby, startId, endId, startDate, endDate, click, focus }">
-          <BaseInputGroup>
+          <w-input-group>
             <w-input
               :value="startDate"
+              v-validate="'required'"
+              name="checkin"
               label="Check-in"
               :data-start-id="startId"
-              :error="error"
-              :valid="valid"
               :aria-describedby="ariaDescribedby"
               readonly
               @click="click"
@@ -290,8 +287,8 @@ export default {
             />
             <w-input
               :value="endDate"
-              :error="error"
-              :valid="valid"
+              v-validate="'required'"
+              name="checkout"
               label="Check-out"
               :data-end-id="endId"
               :aria-describedby="ariaDescribedby"
@@ -299,13 +296,13 @@ export default {
               @click="click"
               @focus="focus"
             />
-          </BaseInputGroup>
+          </w-input-group>
         </template>
       </WDatePickerRange>
     </div>
 
     <div class="form-container">
-      <BaseInputGroup>
+      <w-input-group>
         <w-input v-model="formdata.firstName" label="Name" />
         <w-date-picker
           v-model="formdata.birthdate"
@@ -329,7 +326,7 @@ export default {
             </template>
           </w-input>
         </w-date-picker>
-      </BaseInputGroup>
+      </w-input-group>
     </div>
 
     <div class="form-container">

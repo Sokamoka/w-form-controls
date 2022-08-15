@@ -1,11 +1,31 @@
 import { findIndex, propEq, slice } from 'ramda';
 import { inject, onUnmounted, provide, ref, watch } from 'vue';
 
-export const ExpandedFieldContext = Symbol('ExpandedFieldContext');
+const ExpandedFieldContext = Symbol('ExpandedFieldContext');
+const PopperContentContext = Symbol('PopperContentContext');
 
-export const useExpandedFieldProvider = ({ contentRef = ref(null) }) => {
-  const fields = ref([]);
+export const usePopperContentProvider = (contentRef = ref(null)) => {
   const reference = ref(null);
+
+  const api = {
+    check: (event) => {
+      return reference.value?.contains(event.relatedTarget);
+    },
+  };
+  provide(PopperContentContext, api);
+
+  watch(contentRef, (content) => {
+    reference.value = content;
+  });
+};
+
+export const usePopperContent = () => {
+  const api = inject(PopperContentContext, null);
+  return api?.check;
+};
+
+export const useExpandedFieldProvider = () => {
+  const fields = ref([]);
 
   const api = {
     register: (item) => {
@@ -16,30 +36,36 @@ export const useExpandedFieldProvider = ({ contentRef = ref(null) }) => {
       if (index === -1) return;
       slice(index, 1, fields.value);
     },
-    check: (event) => {
-      return reference.value?.contains(event.relatedTarget);
-    },
   };
   provide(ExpandedFieldContext, api);
 
-  watch(contentRef, (content) => {
-    reference.value = content;
-  });
-
   return {
-    fields: fields,
+    fields,
   };
 };
 
-export const useExpandedField = ({ name, message, inputId, helperText, helperTextSrOnly }) => {
+export const useExpandedField = ({
+  value,
+  name,
+  message,
+  inputId,
+  helperText,
+  helperTextSrOnly,
+  emitInput = () => ({}),
+}) => {
   const api = inject(ExpandedFieldContext, null);
 
   if (!api || !name) return null;
+
   watch(inputId, (id) => {
     if (!id) return;
     api.register({ id, name, message, helperText, helperTextSrOnly });
   });
   onUnmounted(() => api?.unregister(name));
+
+  // watch(value, () => {
+  //   emitInput();
+  // });
 
   return api;
 };

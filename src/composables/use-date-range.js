@@ -33,7 +33,7 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
   const state = useRangeState();
 
   const dateRange = computed(() => {
-    if (!startDate.value || !endDate.value) return null;
+    if (!startDate.value && !endDate.value) return null;
     return { start: startDate.value, end: endDate.value };
   });
 
@@ -64,8 +64,8 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
       end: unref(initialEndDate),
     }),
     ({ start, end }) => {
-      startDate.value = start;
-      endDate.value = end;
+      startDate.value = start || end;
+      endDate.value = end || start;
     }
   );
 

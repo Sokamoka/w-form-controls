@@ -42,7 +42,7 @@
 import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
-import { useExpandedFieldProvider } from '../internal';
+import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 import { isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
@@ -127,9 +127,9 @@ export default {
       ];
     });
 
-    const { fields } = useExpandedFieldProvider({
-      contentRef: computed(() => popperRef?.value?.popperRef),
-    });
+    usePopperContentProvider(computed(() => popperRef?.value?.popperRef));
+
+    const { fields } = useExpandedFieldProvider();
 
     const onChange = (event) => {
       emit('input', event.date);

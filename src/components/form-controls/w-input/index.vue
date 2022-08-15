@@ -49,7 +49,7 @@ import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import HelperText from './helper-text.vue';
-import { useExpandedField } from '../internal';
+import { useExpandedField, usePopperContent } from '../internal';
 
 export default {
   name: 'W-Input',
@@ -145,7 +145,7 @@ export default {
   setup(props, { emit }) {
     const inputRef = ref(null);
 
-    const internalValue = ref('');
+    const internalValue = ref(null);
 
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
@@ -180,21 +180,23 @@ export default {
     watch(
       () => props.value,
       (value) => {
-        // console.log({ name: props.name, value, internalValue: internalValue.value, model: modelValue.value });
+        console.log({ name: props.name, value, internalValue: internalValue.value, model: modelValue.value });
         if (value === internalValue.value) return;
-        // console.log('W-value', value);
-        emit('input', value);
+        console.log('W-value', value);
+        emit('blur', value);
       }
     );
 
+    const isInnerContent = usePopperContent();
+
     const expandedField = useExpandedField({
-      value: computed(() => props.value),
+      // value: computed(() => props.value),
       name: props.name,
       message: currentErrorMessage,
       inputId: computed(() => `${inputRef.value?.id}-help`),
       helperText: props.helperText,
       helperTextSrOnly: props.helperTextSrOnly,
-      emitInput: () => emit('input'),
+      // emitInput: () => emit('input'),
     });
 
     const isHelperVisible = computed(() => {
@@ -205,8 +207,8 @@ export default {
     });
 
     const onBlur = (event) => {
-      console.log('check', expandedField?.check(event));
-      if (expandedField?.check(event)) return;
+      // console.log('isInnerContent', isInnerContent?.(event));
+      if (isInnerContent?.(event)) return;
       emit('blur', event);
     };
 

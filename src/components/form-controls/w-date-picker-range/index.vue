@@ -51,12 +51,12 @@ import { computed, ref, watch } from 'vue';
 import { formatDate } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
-// import useVeeValidator from '~/composables/use-vee-validator.js';
 import useDateRange from '~/composables/use-date-range.js';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
 import HelperText from '../w-input/helper-text.vue';
+import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 // import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
@@ -100,7 +100,7 @@ export default {
 
     appendTo: {
       type: String,
-      default: '',
+      default: 'body',
     },
 
     valid: {
@@ -128,19 +128,6 @@ export default {
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
 
-    // const { messages } = useErrorMessageProvider();
-
-    // const {
-    //   message: validatorFieldErrorMessage,
-    //   error: hasError,
-    //   valid: isValid,
-    // } = useVeeValidator({
-    //   name: props.name,
-    //   scope: props.scope,
-    //   error: props.error,
-    //   valid: props.valid,
-    // });
-
     const { state, startDate, endDate, dateRange, normalizedDateRange, startRefId, endRefId, isReady, resetDates } =
       useDateRange({
         initialStartDate: computed(() => props.value?.start),
@@ -164,8 +151,15 @@ export default {
       ];
     });
 
+    usePopperContentProvider(computed(() => popperRef?.value?.popperRef));
+
+    const { fields } = useExpandedFieldProvider();
+
     const onDayMouseEnter = (event) => {
-      if (state.isStart()) return (startDate.value = event.date);
+      if (state.isStart()) {
+        startDate.value = event.date;
+        endDate.value = event.date;
+      }
       endDate.value = event.date;
     };
 
@@ -193,9 +187,9 @@ export default {
         event.event.preventDefault();
         onChange(event);
       }
-      if (key.includes('Arrow')) {
-        onDayMouseEnter(event);
-      }
+      // if (key.includes('Arrow')) {
+      //   onDayMouseEnter(event);
+      // }
     };
 
     watch(isPopperVisible, (visible) => {
@@ -205,14 +199,12 @@ export default {
 
     return {
       state,
+      fields,
       popperRef,
       startRefId,
       endRefId,
       attributes,
       isPopperVisible,
-      // validatorFieldErrorMessage,
-      // hasError,
-      // isValid,
       formatedStartDate,
       formatedEndDate,
       onChange,
@@ -224,7 +216,6 @@ export default {
       },
       onLeave: (event) => {
         emit('blur', event);
-        // api.emitBlur(event);
       },
       onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
     };

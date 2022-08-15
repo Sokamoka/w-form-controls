@@ -228,7 +228,7 @@ export const InputGroup = defineComponent({
   name: 'InputGroup',
 
   setup() {
-    const { fields } = useExpandedFieldProvider({});
+    const { fields } = useExpandedFieldProvider();
 
     return {
       fields,
