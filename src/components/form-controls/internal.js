@@ -1,56 +1,89 @@
-import { inject, provide, ref, unref, watch } from 'vue';
+import { findIndex, propEq, slice } from 'ramda';
+import { computed, inject, onMounted, onUnmounted, provide, ref, unref, watch, watchEffect } from 'vue';
 
-export const ExternalValidationContext = Symbol('ExternalValidationContext');
-export const ExternalPopperContext = Symbol('ExternalPopperContext');
+export const CollectErrorMessages = Symbol('CollectErrorMessages');
+export const ExpandedFieldContext = Symbol('ExpandedFieldContext');
 
-export const useExternalValidation = ({ blur = () => ({}), input = () => ({}) }) => {
-  const api = inject(ExternalValidationContext, null);
-  if (api) {
-    api.register({ blur, input });
-  }
+export const useErrorMessageProvider = () => {
+  const inputs = ref([]);
+
+  const api = {
+    inputs,
+    register: (item) => {
+      inputs.value.push(item);
+    },
+    unregister: (name) => {
+      const index = findIndex(propEq('name', name))(inputs.value);
+      if (index === -1) return;
+      // inputs.value.splice(index, 1);
+      slice(index, 1, inputs.value);
+    },
+  };
+
+  provide(CollectErrorMessages, api);
+
   return {
-    hasExternalValidation: Boolean(api),
+    messages: inputs,
   };
 };
 
-export const useExternalPopperProvider = ({ value, contentRef }) => {
-  const reference = ref();
+export const useCollectErrorMessages = ({ name, message }) => {
+  const api = inject(CollectErrorMessages, null);
+
+  // watchEffect(() => {
+  //   console.log('WATCHEFFECT');
+  // });
+
+  onMounted(() => api?.register({ name, message }));
+  onUnmounted(() => api?.unregister(name));
+};
+
+export const useExpandedFieldProvider = ({ contentRef }) => {
+  const fields = ref([]);
+  const reference = ref(null);
 
   const api = {
-    value,
-    input: () => {
-      console.log('NOOP');
+    register: (item) => {
+      fields.value.push(item);
+    },
+    unregister: (name) => {
+      const index = findIndex(propEq('name', name))(fields.value);
+      if (index === -1) return;
+      // inputs.value.splice(index, 1);
+      slice(index, 1, fields.value);
     },
     check: (event) => {
       return reference.value.contains(event.relatedTarget);
     },
   };
+  provide(ExpandedFieldContext, api);
 
   watch(contentRef, (content) => {
     reference.value = content;
   });
 
-  provide(ExternalPopperContext, api);
-
   return {
-    inputEvent: api.input,
+    fields: fields,
+    errors: computed(() => fields.value.map((field) => field?.message)),
   };
 };
 
-export const useExternalPopper = ({ value, input = () => ({}) }) => {
-  const api = inject(ExternalPopperContext, null);
+export const useExpandedField = ({ value, name, message, inputId, helperText, emitInput }) => {
+  const api = inject(ExpandedFieldContext, null);
 
-  if (api) {
-    // api.input = input;
-  }
+  if (!api || !name) return { api: null };
+  watch(inputId, (id) => {
+    if (!id) return;
+    api.register({ id, name, message, helperText });
+  });
+  onUnmounted(() => api?.unregister(name));
 
-  watch(value, (val) => {
-    if (!api) return;
-    input(val);
+  // VeeValidate miatt kell, ha változik a value
+  watch(value, () => {
+    emitInput();
   });
 
   return {
     api,
-    hasExternalPopper: Boolean(api),
   };
 };

@@ -41,7 +41,6 @@ const isHelperSrOnly = computed(() => props.helperSrOnly && !props.error);
   }
 
   .icon {
-    flex-basis: 34px;
     stroke: $color-gray-basic;
     width: 22px;
     height: 22px;

@@ -58,7 +58,7 @@ import { InputControl, InputWrapper, InputInput, InputLabel, useInputGroup } fro
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import ErrorIndicator from '../../error-indicator.vue';
 import HelperText from './helper-text.vue';
-import { useExternalPopper } from '../internal';
+import { useExpandedField } from '../internal';
 
 export default {
   name: 'W-Input',
@@ -188,24 +188,27 @@ export default {
       inputId: computed(() => `${inputRef.value?.id}-help`),
     });
 
+    const { api } = useExpandedField({
+      value: modelValue,
+      name: props.name,
+      message: currentErrorMessage,
+      inputId: computed(() => `${inputRef.value?.id}-help`),
+      helperText: props.helperText,
+      helperTextSrOnly: props.helperTextSrOnly,
+      emitInput: () => emit('input'),
+    });
+
     const isHelperVisible = computed(() => {
       if (isInGroup) return false;
+      if (api) return false;
       if (props.helperTextDisabled) return false;
       if (hasError.value) return true;
       return false;
     });
 
-    const { api } = useExternalPopper({
-      value: computed(() => props.value),
-      input: (value) => {
-        console.log('CALL-EMIT:', value);
-        emit('input', value);
-      },
-    });
-
     const onBlur = (event) => {
-      console.log('check', api && api.check(event));
-      if (api && api.check(event)) return;
+      console.log('check', api?.check(event));
+      if (api?.check(event)) return;
       emit('blur', event);
     };
 
@@ -287,9 +290,9 @@ export default {
   box-shadow: inset 0 0 0 1px #999, 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
-.w-input-wrapper.is-group:focus-within {
-  box-shadow: inset 0 0 0 1px #999;
-}
+// .w-input-wrapper.is-group:focus-within {
+//   box-shadow: inset 0 0 0 1px #999;
+// }
 
 .w-input-wrapper .valid-icon {
   stroke: #48cb40;

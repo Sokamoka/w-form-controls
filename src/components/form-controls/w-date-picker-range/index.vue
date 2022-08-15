@@ -17,8 +17,6 @@
       name="default"
       :start-date="formatedStartDate"
       :end-date="formatedEndDate"
-      :error="hasError"
-      :valid="isValid"
       :start-id="startRefId"
       :end-id="endRefId"
       :aria-describedby="`${name}-help`"
@@ -27,13 +25,13 @@
     />
 
     <template v-slot:helper>
-      <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
-        <HelperText
+      <slot name="helper">
+        <!-- <HelperText
           :id="`${name}-help`"
           :error="hasError"
           :text="hasError ? validatorFieldErrorMessage : helperText"
           :helper-sr-only="helperTextSrOnly"
-        />
+        /> -->
       </slot>
     </template>
     <template v-slot:content>
@@ -53,13 +51,13 @@ import { computed, ref, watch } from 'vue';
 import { formatDate } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
-import useVeeValidator from '~/composables/use-vee-validator.js';
+// import useVeeValidator from '~/composables/use-vee-validator.js';
 import useDateRange from '~/composables/use-date-range.js';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
 import HelperText from '../w-input/helper-text.vue';
-// import { ExternalValidationContext } from '../internal';
+import { useErrorMessageProvider } from '../internal';
 // import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
@@ -131,27 +129,18 @@ export default {
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
 
-    // const childEvents = [];
-    // const api = {
-    //   register: (events) => {
-    //     childEvents.push(events)
-    //   },
-    //   emitBlur: (event) => childEvents.forEach((e) => e.blur(event)),
-    //   emitInput: () => childEvents.forEach((e) => e.input()),
-    // };
+    // const { messages } = useErrorMessageProvider();
 
-    // provide(ExternalValidationContext, api);
-
-    const {
-      message: validatorFieldErrorMessage,
-      error: hasError,
-      valid: isValid,
-    } = useVeeValidator({
-      name: props.name,
-      scope: props.scope,
-      error: props.error,
-      valid: props.valid,
-    });
+    // const {
+    //   message: validatorFieldErrorMessage,
+    //   error: hasError,
+    //   valid: isValid,
+    // } = useVeeValidator({
+    //   name: props.name,
+    //   scope: props.scope,
+    //   error: props.error,
+    //   valid: props.valid,
+    // });
 
     const { state, startDate, endDate, dateRange, normalizedDateRange, startRefId, endRefId, isReady, resetDates } =
       useDateRange({
@@ -186,7 +175,6 @@ export default {
         startDate.value = event.date;
         endDate.value = null;
         emit('input', normalizedDateRange());
-        // api.emitInput();
         if (isReady()) isPopperVisible.value = false;
         endDate.value = event.date;
         state.step();
@@ -194,7 +182,6 @@ export default {
       }
       endDate.value = event.date;
       emit('input', normalizedDateRange());
-      // api.emitInput();
       const element = document.querySelector(`[data-end-id="${endRefId}"]`);
       element?.focus();
       if (!startDate.value) return state.step();
@@ -224,9 +211,9 @@ export default {
       endRefId,
       attributes,
       isPopperVisible,
-      validatorFieldErrorMessage,
-      hasError,
-      isValid,
+      // validatorFieldErrorMessage,
+      // hasError,
+      // isValid,
       formatedStartDate,
       formatedEndDate,
       onChange,

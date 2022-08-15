@@ -22,10 +22,10 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 .input-group {
   display: flex;
-  border: 1px solid #999;
+  border: 1px solid $color-gray-basic;
   border-radius: 5px;
 }
 
@@ -35,7 +35,7 @@ export default {
 
 .input-group > div .w-input-wrapper {
   border: none;
-  border-right: 1px solid #999;
+  border-right: 1px solid $color-gray-basic;
   border-radius: 0;
 }
 
@@ -48,5 +48,12 @@ export default {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-right: none;
+}
+.input-group .w-input-wrapper:focus-within {
+  box-shadow: inset 0 0 0 1px $color-gray-basic;
+}
+
+.input-group .w-input-wrapper.is-error:focus-within {
+  box-shadow: inset 0 0 0 2px $color-pink-basic, 0 0 10px rgba($color-pink-basic, 0.35);
 }
 </style>

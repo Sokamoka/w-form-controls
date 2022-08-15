@@ -12,17 +12,24 @@
     @update:shown="onPopperVisibleUpdate"
     @leave="$emit('blur', $event)"
   >
-    <slot name="default" :value="inputValue" :click="onClick" :error="hasError" :valid="isValid" />
+    <slot name="default" :value="inputValue" :click="onClick" />
 
     <template v-slot:helper>
-      <slot name="helper" :message="validatorFieldErrorMessage" :error="hasError" :valid="isValid">
-        <HelperText
-          :id="`${name}-help`"
-          :error="error"
-          :text="error ? errorMessage : helperText"
-          :helper-sr-only="helperTextSrOnly"
-        />
-      </slot>
+      <div>
+        <slot name="helper">
+          <template v-for="{ helperText, helperTextSrOnly, message, name, id } in fields">
+            <HelperText
+              v-if="message || helperText"
+              :id="id"
+              :error="Boolean(message)"
+              :text="message ? message : helperText"
+              :helper-sr-only="helperTextSrOnly"
+            />
+            <!-- <ErrorIndicator v-if="message" :id="id" :key="name" :message="message" aria-live="assertive" />
+            <div v-else key="helper-text">{{ helperText }}</div> -->
+          </template>
+        </slot>
+      </div>
     </template>
     <template v-slot:content>
       <Calendar :attributes="attributes" v-bind="$attrs" @dayclick="onChange" @daykeydown="onDayKeydown" />
@@ -34,20 +41,20 @@
 import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
-import useVeeValidator from '~/composables/use-vee-validator.js';
-import { useExternalPopperProvider } from '../internal';
+import { useErrorMessageProvider, useExpandedFieldProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 import { isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
 import WPopper from '../w-popper/index.vue';
 import HelperText from '../w-input/helper-text.vue';
+import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
   name: 'DatePicker',
 
   inheritAttrs: false,
 
-  components: { WPopper, Calendar, HelperText },
+  components: { WPopper, Calendar, HelperText, ErrorIndicator },
 
   props: {
     value: {
@@ -96,15 +103,15 @@ export default {
       default: false,
     },
 
-    error: {
-      type: Boolean,
-      default: false,
-    },
+    // error: {
+    //   type: Boolean,
+    //   default: false,
+    // },
 
-    errorMessage: {
-      type: String,
-      default: '',
-    },
+    // errorMessage: {
+    //   type: String,
+    //   default: '',
+    // },
   },
 
   setup(props, { emit }) {
@@ -116,14 +123,16 @@ export default {
       return formatDate(props.value, props.format);
     });
 
-    const {
-      message: validatorFieldErrorMessage,
-      error: hasError,
-      valid: isValid,
-    } = useVeeValidator({
-      name: props.name,
-      scope: props.scope,
-    });
+    const { messages } = useErrorMessageProvider();
+
+    // const {
+    //   message: validatorFieldErrorMessage,
+    //   error: hasError,
+    //   valid: isValid,
+    // } = useVeeValidator({
+    //   name: props.name,
+    //   scope: props.scope,
+    // });
 
     const attributes = computed(() => {
       return [
@@ -138,8 +147,8 @@ export default {
       ];
     });
 
-    const { inputEvent } = useExternalPopperProvider({
-      value: props.value,
+    const { fields, errors } = useExpandedFieldProvider({
+      // value: props.value,
       contentRef: computed(() => popperRef?.value?.popperRef),
     });
 
@@ -163,9 +172,12 @@ export default {
       inputValue,
       attributes,
       isPopperVisible,
-      validatorFieldErrorMessage,
-      hasError,
-      isValid,
+      messages,
+      fields,
+      errors,
+      // validatorFieldErrorMessage,
+      // hasError,
+      // isValid,
       onChange,
       onDayKeydown,
       onClick: () => {

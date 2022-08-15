@@ -196,95 +196,29 @@ export default {
         </template>
       </w-input>
     </div>
-    <div class="form-container flex">
-      <div>
-        <validation-provider
-          :value="formdata.birthdate"
-          v-validate="'required'"
-          name="birthdate2"
-          error-message="Costum error message"
-          v-slot:default="{ error, valid, message, inputEvents: { input, blur } }"
-        >
-          <w-date-picker
-            v-model="formdata.birthdate"
-            placement="bottom-start"
-            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-            :error="error"
-            :error-message="message"
-            append-to="body"
-            @input="input"
-            @blur="blur"
-          >
-            <template v-slot:default="{ value, click }">
-              <w-input
-                v-model="value"
-                label="Birth date"
-                :error="error"
-                :valid="valid"
-                readonly
-                helper-text-disabled
-                @click="click"
-              >
-                <template v-slot:append>
-                  <CalendarIcon tabindex="-1" class="icon-append is-helper" />
-                </template>
-              </w-input>
-            </template>
-          </w-date-picker>
-        </validation-provider>
-      </div>
-    </div>
 
     <div class="form-container flex">
-      <!-- <div>
-        <WDatePicker
-          v-model="formdata.birthdate"
-          v-validate="'required'"
-          name="birthdate"
-          placement="bottom-start"
-          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-          append-to="body"
-          v-slot:default="{ value, error, valid, click }"
-        >
-          <w-input
-            v-model="value"
-            label="Birth date"
-            :error="error"
-            :valid="valid"
-            readonly
-            helper-text-disabled
-            @click="click"
-          >
-            <template v-slot:append>
-              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
-            </template>
-          </w-input>
-        </WDatePicker>
-      </div> -->
       <div>
-        <WDatePicker
+        <w-date-picker
           v-model="formdata.birthdate"
           placement="bottom-start"
-          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
           append-to="body"
-          v-slot:default="{ value, error, valid, click }"
+          v-slot:default="{ value, click }"
         >
           <w-input
             :value="value"
             v-validate="'required'"
             name="birthdate"
             label="Birth date"
-            :error="error"
-            :valid="valid"
+            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
             readonly
-            helper-text-disabled
             @click="click"
           >
             <template v-slot:append>
               <CalendarIcon tabindex="-1" class="icon-append is-helper" />
             </template>
           </w-input>
-        </WDatePicker>
+        </w-date-picker>
       </div>
       <div>
         <WInput
