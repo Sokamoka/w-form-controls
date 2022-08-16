@@ -11,7 +11,6 @@
       ]"
       :disabled="disabled"
       :readonly="readonly"
-      @focus="$emit('focus', $event)"
       @blur="onBlur"
     >
       <slot name="prepend" />
@@ -45,6 +44,7 @@
 
 <script>
 import { computed, ref, watch } from 'vue';
+import { unrefElement, useEventListener } from '@vueuse/core';
 import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
@@ -187,7 +187,23 @@ export default {
       }
     );
 
-    const isInnerContent = usePopperContent();
+    const isInnerContent = usePopperContent((event) => {
+      console.log('EMIT')
+      emit('blur', event);
+    });
+
+    // useEventListener(
+    //   unrefElement(inputRef.value),
+    //   'focus',
+    //   (event) => {
+    //     console.log(event)
+    //     if (!unrefElement(inputRef.value)?.contains(event.relatedTarget)) return;
+    //     if (unrefElement(inputRef.value)?.contains(event.target)) return;
+    //     if (isInnerContent?.(event)) return;
+    //     emit('blur', event);
+    //   },
+    //   true
+    // );
 
     const expandedField = useExpandedField({
       // value: computed(() => props.value),
@@ -207,7 +223,8 @@ export default {
     });
 
     const onBlur = (event) => {
-      // console.log('isInnerContent', isInnerContent?.(event));
+      console.log('isInnerContent', event, isInnerContent?.(event));
+      if (!event.relatedTarget) return;
       if (isInnerContent?.(event)) return;
       emit('blur', event);
     };

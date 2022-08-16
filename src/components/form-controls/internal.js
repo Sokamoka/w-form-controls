@@ -1,3 +1,4 @@
+import { noop } from '@vueuse/core';
 import { findIndex, propEq, slice } from 'ramda';
 import { inject, onUnmounted, provide, ref, watch } from 'vue';
 
@@ -6,8 +7,17 @@ const PopperContentContext = Symbol('PopperContentContext');
 
 export const usePopperContentProvider = (contentRef = ref(null)) => {
   const reference = ref(null);
+  let inputEvent = noop;
 
   const api = {
+    inputEvent: (handler) => {
+      console.log('handler');
+      inputEvent = handler;
+    },
+    onInput: () => {
+      console.log('onInput');
+      inputEvent();
+    },
     check: (event) => {
       return reference.value?.contains(event.relatedTarget);
     },
@@ -17,14 +27,23 @@ export const usePopperContentProvider = (contentRef = ref(null)) => {
   watch(contentRef, (content) => {
     reference.value = content;
   });
+
+  return {
+    onInput: api.onInput,
+  };
 };
 
-export const usePopperContent = () => {
+export const usePopperContent = (leaveEventHandler = () => noop) => {
   const api = inject(PopperContentContext, null);
+
+  api?.inputEvent(leaveEventHandler);
   return api?.check;
 };
 
 export const useExpandedFieldProvider = () => {
+  const isEmbeded = inject(ExpandedFieldContext, null);
+  if (isEmbeded) return {};
+
   const fields = ref([]);
 
   const api = {

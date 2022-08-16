@@ -78,14 +78,22 @@ const { masked: namedayMasked, typed: namedayTyped } = useIMask(
 const onCustomEvent = () => {
   console.log('ON-KEYPRESS');
 };
-
-// onMounted(() => {});
 </script>
 
 <script>
 export default {
   $_veeValidate: {
     validator: 'new', // give me my own validator scope.
+  },
+
+  methods: {
+    async validateBeforeSubmit() {
+      const result = await this.$validator.validateAll();
+      if (result) {
+        consoele.log('Form Submitted!');
+        return;
+      }
+    },
   },
 };
 </script>
@@ -118,236 +126,242 @@ export default {
       </div>
     </div>
 
-    <div class="form-container">
-      No helper text:<HelperText></HelperText>
-      <HelperText text="Helper text visible"></HelperText>
-      <HelperText text="Has error" :error="true"></HelperText>
-      Hidden: <HelperText text="Helper text sr only" :helper-sr-only="true"></HelperText>
-      <HelperText text="Helper text sr only and has error" :sr-only="true" :error="true"></HelperText>
-    </div>
-    <div class="form-container">
-      <w-input
-        v-model="formdata.email"
-        v-validate="'required|email'"
-        name="email"
-        class="test-class"
-        label="E-mail"
-        type="text"
-        :valid="isValid"
-        :error="hasError"
-        :readonly="isReadonly"
-        :disabled="isDisabled"
-        helper-text="Please add valid e-mail"
-        data-test="email-input"
-        @keypress="onCustomEvent"
-      >
-      </w-input>
-    </div>
-
-    <div class="form-container">
-      <ShowPassword v-slot="{ type }">
+    <form @submit.prevent="validateBeforeSubmit">
+      <div class="form-container">
+        No helper text:<HelperText></HelperText>
+        <HelperText text="Helper text visible"></HelperText>
+        <HelperText text="Has error" :error="true"></HelperText>
+        Hidden: <HelperText text="Helper text sr only" :helper-sr-only="true"></HelperText>
+        <HelperText text="Helper text sr only and has error" :sr-only="true" :error="true"></HelperText>
+      </div>
+      <div class="form-container">
         <w-input
-          v-model="formdata.password"
+          v-model="formdata.email"
+          v-validate="'required|email'"
+          name="email"
+          class="test-class"
+          label="E-mail"
+          type="text"
+          :valid="isValid"
+          :error="hasError"
+          :readonly="isReadonly"
+          :disabled="isDisabled"
+          helper-text="Please add valid e-mail"
+          data-test="email-input"
+          @keypress="onCustomEvent"
+        >
+        </w-input>
+      </div>
+
+      <div class="form-container">
+        <ShowPassword v-slot="{ type }">
+          <w-input
+            v-model="formdata.password"
+            v-validate="'required|min:6'"
+            name="password"
+            class="test-class"
+            label="Password"
+            :type="type"
+            helper-text="Please add valid password"
+            data-test="password-input"
+          >
+            <template v-slot:append>
+              <ShowPasswordButton />
+            </template>
+          </w-input>
+        </ShowPassword>
+      </div>
+
+      <div class="form-container">
+        <w-input
+          v-model="formdata.password2"
           v-validate="'required|min:6'"
-          name="password"
+          name="password2"
+          data-vv-as="From data-vv-as Password"
           class="test-class"
           label="Password"
-          :type="type"
+          :type="passwordFieldType"
           helper-text="Please add valid password"
           data-test="password-input"
         >
           <template v-slot:append>
-            <ShowPasswordButton />
+            <EyeOffIcon
+              v-if="passwordFieldType === 'text'"
+              tabindex="0"
+              aria-label="Hide Password"
+              :class="['icon-append']"
+              @click="change"
+              @keypress.enter.space.prevent="change"
+            />
+            <EyeIcon
+              v-else
+              tabindex="0"
+              aria-label="Show Password"
+              :class="['icon-append']"
+              @click="change"
+              @keypress.enter.space.prevent="change"
+            />
           </template>
         </w-input>
-      </ShowPassword>
-    </div>
+      </div>
 
-    <div class="form-container">
-      <w-input
-        v-model="formdata.password2"
-        v-validate="'required|min:6'"
-        name="password2"
-        data-vv-as="From data-vv-as Password"
-        class="test-class"
-        label="Password"
-        :type="passwordFieldType"
-        helper-text="Please add valid password"
-        data-test="password-input"
-      >
-        <template v-slot:append>
-          <EyeOffIcon
-            v-if="passwordFieldType === 'text'"
-            tabindex="0"
-            aria-label="Hide Password"
-            :class="['icon-append']"
-            @click="change"
-            @keypress.enter.space.prevent="change"
-          />
-          <EyeIcon
-            v-else
-            tabindex="0"
-            aria-label="Show Password"
-            :class="['icon-append']"
-            @click="change"
-            @keypress.enter.space.prevent="change"
-          />
-        </template>
-      </w-input>
-    </div>
-
-    <div class="form-container flex">
-      <div>
-        <w-date-picker
-          v-model="formdata.birthdate"
-          placement="bottom-start"
-          append-to="body"
-          v-slot:default="{ value, click }"
-        >
-          <w-input
-            :value="value"
+      <div class="form-container flex">
+        <div>
+          <w-date-picker
+            v-model="formdata.birthdate"
+            placement="bottom-start"
+            append-to="body"
+            v-slot:default="{ value, click }"
+          >
+            <w-input
+              :value="value"
+              v-validate="'required'"
+              name="birthdate"
+              label="Birth date"
+              helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+              helper-text-sr-only
+              readonly
+              @click="click"
+            >
+              <template v-slot:append>
+                <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+              </template>
+            </w-input>
+          </w-date-picker>
+        </div>
+        <div>
+          <WInput
+            ref="namedayInputRef"
+            v-model="namedayMasked"
             v-validate="'required'"
-            name="birthdate"
-            label="Birth date"
+            name="nameday"
+            label="Name day"
             helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
             helper-text-sr-only
-            readonly
-            @click="click"
           >
             <template v-slot:append>
-              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+              <WDatePicker v-model="namedayTyped" placement="bottom-end" v-slot:default="{ click }">
+                <CalendarIcon tabindex="0" class="icon-append is-button" @click="click" />
+              </WDatePicker>
             </template>
-          </w-input>
-        </w-date-picker>
+          </WInput>
+        </div>
       </div>
-      <div>
-        <WInput
-          ref="namedayInputRef"
-          v-model="namedayMasked"
-          v-validate="'required|date_format:yyyy-MM-dd'"
-          name="nameday"
-          label="Name day"
-          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-          helper-text-sr-only
-        >
-          <template v-slot:append>
-            <WDatePicker v-model="namedayTyped" placement="bottom-end" v-slot:default="{ click }">
-              <CalendarIcon tabindex="0" class="icon-append is-button" @click="click" />
-            </WDatePicker>
-          </template>
-        </WInput>
-      </div>
-    </div>
 
-    <div class="form-container">
-      <w-popper content="Please add valid characters" :triggers="['focusWithin']">
-        <w-input-group>
-          <w-input
-            v-model="formdata.firstName"
-            v-validate="'required'"
-            name="firstname"
-            label="First name"
-            helper-text="Please add valid characters"
-          />
-          <w-input v-model="formdata.middleName" label="Middle name" />
-          <w-input
-            v-if="isLastItemVisible"
-            v-model="formdata.lastName"
-            v-validate="'required'"
-            name="lastname"
-            label="Last name"
-            error-message="Custom required error message"
-          />
-        </w-input-group>
-      </w-popper>
-    </div>
-
-    <div class="form-container">
-      {{ formdata.check }}
-      <WDatePickerRange
-        v-model="formdata.check"
-        placement="top"
-        format="YYYY-MM-DD"
-        :columns="2"
-        helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-        :helper-text-sr-only="true"
-      >
-        <template v-slot:default="{ error, valid, ariaDescribedby, startId, endId, startDate, endDate, click, focus }">
+      <div class="form-container">
+        <w-popper content="Please add valid characters" :triggers="['focusWithin']">
           <w-input-group>
             <w-input
-              :value="startDate"
+              v-model="formdata.firstName"
               v-validate="'required'"
-              name="checkin"
-              label="Check-in"
-              :data-start-id="startId"
-              :aria-describedby="ariaDescribedby"
-              readonly
-              @click="click"
-              @focus="focus"
+              name="firstname"
+              label="First name"
+              helper-text="Please add valid characters"
             />
+            <w-input v-model="formdata.middleName" label="Middle name" />
             <w-input
-              :value="endDate"
+              v-if="isLastItemVisible"
+              v-model="formdata.lastName"
               v-validate="'required'"
-              name="checkout"
-              label="Check-out"
-              :data-end-id="endId"
-              :aria-describedby="ariaDescribedby"
-              readonly
-              @click="click"
-              @focus="focus"
+              name="lastname"
+              label="Last name"
+              error-message="Custom required error message"
             />
           </w-input-group>
-        </template>
-      </WDatePickerRange>
-    </div>
+        </w-popper>
+      </div>
 
-    <div class="form-container">
-      <w-input-group>
-        <w-input v-model="formdata.firstName" label="Name" />
-        <w-date-picker
-          v-model="formdata.birthdate"
-          placement="bottom-start"
-          append-to="body"
-          helper-text-disabled
-          v-slot:default="{ value, click }"
+      <div class="form-container">
+        {{ formdata.check }}
+        <w-date-picker-range
+          v-model="formdata.check"
+          placement="bottom"
+          format="YYYY-MM-DD"
+          :columns="2"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          :helper-text-sr-only="true"
         >
-          <w-input
-            :value="value"
-            v-validate="'required'"
-            name="birthdate-group"
-            label="Birth date"
-            helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-            helper-text-sr-only
-            readonly
-            @click="click"
-          >
-            <template v-slot:append>
-              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
-            </template>
-          </w-input>
-        </w-date-picker>
-      </w-input-group>
-    </div>
+          <template v-slot:default="{ ariaDescribedby, startId, endId, startDate, endDate, click, focus }">
+            <w-input-group>
+              <w-input
+                :value="startDate"
+                v-validate="'required'"
+                name="checkin"
+                label="Check-in"
+                :data-start-id="startId"
+                :aria-describedby="ariaDescribedby"
+                readonly
+                @click="click"
+                @focus="focus"
+              />
+              <w-input
+                :value="endDate"
+                v-validate="'required'"
+                name="checkout"
+                label="Check-out"
+                :data-end-id="endId"
+                :aria-describedby="ariaDescribedby"
+                readonly
+                @click="click"
+                @focus="focus"
+              />
+            </w-input-group>
+          </template>
+        </w-date-picker-range>
+      </div>
 
-    <div class="form-container">
-      {{ unmasked }}
-      <w-input
-        ref="maskedInputRef"
-        v-model="masked"
-        inputmode="tel"
-        label="Phone"
-        helper-text="Lorem Ipsum Information"
-      >
-        <template v-slot:prepend>
-          <PhoneIcon class="icon-prepend" />
-        </template>
-        <template v-slot:append>
-          <w-popper content="Lorem Ipsum Information">
-            <InformationCircleIcon class="icon-append" />
-          </w-popper>
-        </template>
-      </w-input>
-    </div>
+      <div class="form-container">
+        <w-input-group>
+          <w-input v-model="formdata.firstName" label="Name" />
+          <w-date-picker
+            v-model="formdata.birthdate"
+            placement="bottom-start"
+            append-to="body"
+            helper-text-disabled
+            v-slot:default="{ value, click }"
+          >
+            <w-input
+              :value="value"
+              v-validate="'required'"
+              name="birthdate-group"
+              label="Birth date"
+              helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+              helper-text-sr-only
+              readonly
+              @click="click"
+            >
+              <template v-slot:append>
+                <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+              </template>
+            </w-input>
+          </w-date-picker>
+        </w-input-group>
+      </div>
+
+      <div class="form-container">
+        {{ unmasked }}
+        <w-input
+          ref="maskedInputRef"
+          v-model="masked"
+          inputmode="tel"
+          label="Phone"
+          helper-text="Lorem Ipsum Information"
+        >
+          <template v-slot:prepend>
+            <PhoneIcon class="icon-prepend" />
+          </template>
+          <template v-slot:append>
+            <w-popper content="Lorem Ipsum Information">
+              <InformationCircleIcon class="icon-append" />
+            </w-popper>
+          </template>
+        </w-input>
+      </div>
+
+      <div class="form-container">
+        <button type="submit">Send</button>
+      </div>
+    </form>
   </div>
 </template>
 

@@ -13,7 +13,7 @@ import { InputGroup } from '../w-input/input';
 import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
-  name: 'BaseInputGroup',
+  name: 'WInputGroup',
 
   components: {
     InputGroup,

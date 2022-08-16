@@ -10,7 +10,6 @@
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
-    @leave="$emit('blur', $event)"
   >
     <slot name="default" :value="inputValue" :click="onClick" />
 
@@ -140,6 +139,7 @@ export default {
     const onDayKeydown = (event) => {
       const key = event.event.key;
       if ([' ', 'Enter'].includes(key) && !event.isDisabled) {
+        event.event.preventDefault();
         emit('input', event.date);
         focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
         isPopperVisible.value = false;

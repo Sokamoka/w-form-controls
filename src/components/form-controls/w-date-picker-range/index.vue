@@ -25,14 +25,20 @@
     />
 
     <template v-slot:helper>
-      <slot name="helper">
-        <!-- <HelperText
-          :id="`${name}-help`"
-          :error="hasError"
-          :text="hasError ? validatorFieldErrorMessage : helperText"
-          :helper-sr-only="helperTextSrOnly"
-        /> -->
-      </slot>
+      <div>
+        <slot name="helper">
+          <template v-for="{ helperText, helperTextSrOnly, message, name, id } in fields">
+            <HelperText
+              v-if="message || helperText"
+              :key="name"
+              :id="id"
+              :error="Boolean(message)"
+              :text="message ? message : helperText"
+              :helper-sr-only="helperTextSrOnly"
+            />
+          </template>
+        </slot>
+      </div>
     </template>
     <template v-slot:content>
       <Calendar
