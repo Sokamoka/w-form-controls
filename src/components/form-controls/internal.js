@@ -1,6 +1,6 @@
 import { noop } from '@vueuse/core';
-import { findIndex, propEq, slice } from 'ramda';
-import { inject, onUnmounted, provide, ref, watch } from 'vue';
+import { findIndex, isEmpty, propEq, slice } from 'ramda';
+import { computed, inject, onUnmounted, provide, ref, watch } from 'vue';
 
 const ExpandedFieldContext = Symbol('ExpandedFieldContext');
 const PopperContentContext = Symbol('PopperContentContext');
@@ -60,6 +60,7 @@ export const useExpandedFieldProvider = () => {
 
   return {
     fields,
+    hasError: computed(() => !isEmpty(fields.value.filter((field) => Boolean(field?.message)))),
   };
 };
 

@@ -25,8 +25,6 @@
               :text="message ? message : helperText"
               :helper-sr-only="helperTextSrOnly"
             />
-            <!-- <ErrorIndicator v-if="message" :id="id" :key="name" :message="message" aria-live="assertive" />
-            <div v-else key="helper-text">{{ helperText }}</div> -->
           </template>
         </slot>
       </div>
@@ -47,14 +45,13 @@ import { isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
 import WPopper from '../w-popper/index.vue';
 import HelperText from '../w-input/helper-text.vue';
-import ErrorIndicator from '../../error-indicator.vue';
 
 export default {
   name: 'DatePicker',
 
   inheritAttrs: false,
 
-  components: { WPopper, Calendar, HelperText, ErrorIndicator },
+  components: { WPopper, Calendar, HelperText },
 
   props: {
     value: {

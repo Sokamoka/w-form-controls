@@ -228,16 +228,17 @@ export const InputGroup = defineComponent({
   name: 'InputGroup',
 
   setup() {
-    const { fields } = useExpandedFieldProvider();
+    const { fields, hasError } = useExpandedFieldProvider();
 
     return {
       fields,
+      hasError,
     };
   },
 
   render() {
     const data = { as: 'div' };
-    const slot = { errors: this.fields };
+    const slot = { errors: this.fields, hasError: this.hasError };
     const slots = this.$scopedSlots;
 
     return render({

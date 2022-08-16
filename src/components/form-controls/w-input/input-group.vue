@@ -1,6 +1,6 @@
 <template>
-  <InputGroup v-slot:default="{ errors }">
-    <div class="input-group">
+  <InputGroup v-slot:default="{ errors, hasError }">
+    <div :class="['input-group', { 'is-error': hasError }]">
       <slot />
     </div>
     <template v-for="{ message, name, id } in errors">
@@ -27,6 +27,11 @@ export default {
   display: flex;
   border: 1px solid $color-gray-basic;
   border-radius: 5px;
+
+  &.is-error {
+    border-color: $color-pink-basic;
+    box-shadow: 0 0 10px rgba($color-pink-basic, 0.35);
+  }
 }
 
 .input-group:focus-within {
