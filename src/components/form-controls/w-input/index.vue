@@ -44,7 +44,6 @@
 
 <script>
 import { computed, ref, watch } from 'vue';
-import { unrefElement, useEventListener } from '@vueuse/core';
 import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
@@ -67,7 +66,7 @@ export default {
 
   props: {
     value: {
-      type: String,
+      type: [String, Date],
       default: '',
     },
 
@@ -140,22 +139,24 @@ export default {
       type: String,
       default: '',
     },
+
+    maskedValue: {
+      type: String,
+      default: '',
+    },
   },
 
   setup(props, { emit }) {
     const inputRef = ref(null);
 
-    const internalValue = ref(null);
-
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
     const modelValue = computed({
       get() {
-        return props.value;
+        return props.maskedValue || props.value?.toString();
       },
       set(value) {
-        console.log(value);
-        internalValue.value = value;
+        if (props.maskedValue) return;
         emit('input', value);
       },
     });
@@ -180,39 +181,20 @@ export default {
     watch(
       () => props.value,
       (value) => {
-        console.log({ name: props.name, value, internalValue: internalValue.value, model: modelValue.value });
-        if (value === internalValue.value) return;
-        console.log('W-value', value);
+        console.log(value);
+        if (!value) return;
         emit('blur', value);
       }
     );
 
-    const isInnerContent = usePopperContent((event) => {
-      console.log('EMIT')
-      emit('blur', event);
-    });
-
-    // useEventListener(
-    //   unrefElement(inputRef.value),
-    //   'focus',
-    //   (event) => {
-    //     console.log(event)
-    //     if (!unrefElement(inputRef.value)?.contains(event.relatedTarget)) return;
-    //     if (unrefElement(inputRef.value)?.contains(event.target)) return;
-    //     if (isInnerContent?.(event)) return;
-    //     emit('blur', event);
-    //   },
-    //   true
-    // );
+    const isInnerContent = usePopperContent();
 
     const expandedField = useExpandedField({
-      // value: computed(() => props.value),
       name: props.name,
       message: currentErrorMessage,
       inputId: computed(() => `${inputRef.value?.id}-help`),
       helperText: props.helperText,
       helperTextSrOnly: props.helperTextSrOnly,
-      // emitInput: () => emit('input'),
     });
 
     const isHelperVisible = computed(() => {
@@ -222,8 +204,8 @@ export default {
       return false;
     });
 
+    // VeeValidate miatt kell egy blur event emit
     const onBlur = (event) => {
-      console.log('isInnerContent', event, isInnerContent?.(event));
       if (!event.relatedTarget) return;
       if (isInnerContent?.(event)) return;
       emit('blur', event);

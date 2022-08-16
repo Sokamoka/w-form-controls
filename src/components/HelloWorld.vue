@@ -29,17 +29,19 @@ const formdata = reactive({
   firstName: '',
   middleName: '',
   lastName: '',
-  birthdate: null,
+  // birthdate: null,
+  birthdate:  new Date(1980, 7, 19),
   nameday: null,
-  // nameday: new Date(2022, 7, 19),
+  // nameday: new Date(2020, 7, 19),
   check: null,
-  phone: '36301234567',
+  phone: '',
+  // phone: '36301234567',
   // check: { start: new Date(2022, 8, 12), end: new Date(2022, 8, 18) },
 });
 
 const { type: passwordFieldType, change } = useShowPassword({ initialValue: 'text' });
 
-const { masked, unmasked } = useIMask(
+const { masked, unmasked, typed } = useIMask(
   {
     element: computed(() => unrefElement(maskedInputRef.value?.inputRef)),
     initial: formdata.phone,
@@ -50,7 +52,7 @@ const { masked, unmasked } = useIMask(
   }
 );
 
-const { masked: namedayMasked, typed: namedayTyped } = useIMask(
+const { masked: namedayMasked, unmasked: namdayUnmasked, typed: namedayTyped } = useIMask(
   {
     element: computed(() => unrefElement(namedayInputRef.value?.inputRef)),
     initial: formdata.nameday,
@@ -68,7 +70,7 @@ const { masked: namedayMasked, typed: namedayTyped } = useIMask(
     //   m: { mask: IMask.MaskedRange, placeholderChar: 'm', from: 1, to: 12, maxLength: 2 },
     //   d: { mask: IMask.MaskedRange, placeholderChar: 'd', from: 1, to: 31, maxLength: 2 },
     // },
-    // overwrite: true,
+    overwrite: true,
   },
   {
     onComplete: () => (formdata.nameday = namedayTyped.value),
@@ -232,8 +234,9 @@ export default {
         <div>
           <WInput
             ref="namedayInputRef"
-            v-model="namedayMasked"
-            v-validate="'required'"
+            v-model="namedayTyped"
+            :masked-value="namedayMasked"
+            v-validate="'required|date_format:yyyy-MM-dd'"
             name="nameday"
             label="Name day"
             helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
@@ -340,9 +343,11 @@ export default {
 
       <div class="form-container">
         {{ unmasked }}
+        {{ typed }}
         <w-input
           ref="maskedInputRef"
-          v-model="masked"
+          v-model="unmasked"
+          :masked-value="masked"
           inputmode="tel"
           label="Phone"
           helper-text="Lorem Ipsum Information"

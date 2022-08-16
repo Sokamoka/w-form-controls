@@ -33,10 +33,9 @@ export const usePopperContentProvider = (contentRef = ref(null)) => {
   };
 };
 
-export const usePopperContent = (leaveEventHandler = () => noop) => {
+export const usePopperContent = () => {
   const api = inject(PopperContentContext, null);
 
-  api?.inputEvent(leaveEventHandler);
   return api?.check;
 };
 
@@ -64,15 +63,7 @@ export const useExpandedFieldProvider = () => {
   };
 };
 
-export const useExpandedField = ({
-  value,
-  name,
-  message,
-  inputId,
-  helperText,
-  helperTextSrOnly,
-  emitInput = () => ({}),
-}) => {
+export const useExpandedField = ({ name, message, inputId, helperText, helperTextSrOnly }) => {
   const api = inject(ExpandedFieldContext, null);
 
   if (!api || !name) return null;
@@ -82,10 +73,6 @@ export const useExpandedField = ({
     api.register({ id, name, message, helperText, helperTextSrOnly });
   });
   onUnmounted(() => api?.unregister(name));
-
-  // watch(value, () => {
-  //   emitInput();
-  // });
 
   return api;
 };

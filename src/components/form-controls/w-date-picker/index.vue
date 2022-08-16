@@ -30,7 +30,13 @@
       </div>
     </template>
     <template v-slot:content>
-      <Calendar :attributes="attributes" v-bind="$attrs" @dayclick="onChange" @daykeydown="onDayKeydown" />
+      <Calendar
+        :attributes="attributes"
+        v-bind="$attrs"
+        :from-page="fromPage"
+        @dayclick="onChange"
+        @daykeydown="onDayKeydown"
+      />
     </template>
   </WPopper>
 </template>
@@ -41,7 +47,7 @@ import { formatDate, unrefElement } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
-import { isDate } from 'date-fns';
+import { getMonth, getYear, isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
 import WPopper from '../w-popper/index.vue';
 import HelperText from '../w-input/helper-text.vue';
@@ -55,8 +61,8 @@ export default {
 
   props: {
     value: {
-      type: [Object, String, Date],
-      default: () => ({}),
+      type: Date,
+      default: null,
     },
 
     name: {
@@ -110,6 +116,13 @@ export default {
       return formatDate(props.value, props.format);
     });
 
+    // Minig az aktuális év/honap oldalra ugrik
+    const fromPage = computed(() => {
+      const year = getYear(props.value);
+      const month = getMonth(props.value) + 1;
+      return { month, year };
+    });
+
     const attributes = computed(() => {
       return [
         {
@@ -149,6 +162,7 @@ export default {
       attributes,
       isPopperVisible,
       fields,
+      fromPage,
       onChange,
       onDayKeydown,
       onClick: () => {
