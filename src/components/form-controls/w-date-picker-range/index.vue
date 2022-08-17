@@ -11,17 +11,8 @@
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
-    @leave="onLeave"
   >
-    <slot
-      name="default"
-      :start-date="formatedStartDate"
-      :end-date="formatedEndDate"
-      :start-id="startRefId"
-      :end-id="endRefId"
-      :click="onClick"
-      :focus="state.set"
-    />
+    <slot name="default" :start-props="startProps" :end-props="endProps" :input-events="inputEvents" />
 
     <template v-slot:helper>
       <div>
@@ -54,7 +45,7 @@
 
 <script>
 import { computed, ref, watch } from 'vue';
-import { formatDate, useDebounceFn, useTimeoutFn } from '@vueuse/core';
+import { formatDate } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import useDateRange from '~/composables/use-date-range.js';
@@ -64,7 +55,6 @@ import { PLACEMENTS } from '../w-popper/internal';
 import HelperText from '../w-input/helper-text.vue';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 import { getMonth, getYear } from 'date-fns';
-// import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
   name: 'DatePickerRange',
@@ -135,11 +125,20 @@ export default {
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
 
-    const { state, startDate, endDate, dateRange, normalizedDateRange, startRefId, endRefId, isReady, resetDates } =
-      useDateRange({
-        initialStartDate: computed(() => props.value?.start),
-        initialEndDate: computed(() => props.value?.end),
-      });
+    const {
+      dateRange,
+      startRefId,
+      endRefId,
+      indicateMouseMove,
+      setState,
+      change,
+      stop: stopCloseTimer,
+    } = useDateRange({
+      initialStartDate: computed(() => props.value?.start),
+      initialEndDate: computed(() => props.value?.end),
+      emit,
+      close: () => (isPopperVisible.value = false),
+    });
 
     const formatedStartDate = computed(() => props.value?.start && formatDate(props.value.start, props.format));
     const formatedEndDate = computed(() => props.value?.end && formatDate(props.value.end, props.format));
@@ -169,62 +168,48 @@ export default {
 
     const { fields } = useExpandedFieldProvider();
 
-    const onDayMouseEnter = (event) => {
-      // if (state.isStart()) return;
-      // endDate.value = event.date;
-    };
-
-    const onChange = (event) => {
-      if (state.isStart()) {
-        startDate.value = event.date;
-        endDate.value = null;
-        emit('input', normalizedDateRange());
-        // endDate.value = event.date;
-        state.step();
-        return;
-      }
-      endDate.value = event.date;
-      emit('input', normalizedDateRange());
-      const element = document.querySelector(`[data-end-id="${endRefId}"]`);
-      element?.focus();
-      if (!startDate.value) return state.step();
-      isPopperVisible.value = false;
-    };
-
     const onDayKeydown = (event) => {
       const key = event.event.key;
       if ([' ', 'Enter'].includes(key) && !event.isDisabled) {
         event.event.preventDefault();
-        onChange(event);
+        change(event);
       }
+      if (key.includes('Arrow')) {
+        stopCloseTimer();
+      }
+    };
+
+    const onClick = () => {
+      if (isPopperVisible.value) return;
+      isPopperVisible.value = true;
     };
 
     watch(isPopperVisible, (visible) => {
       if (visible) return;
-      resetDates();
+      stopCloseTimer();
     });
 
     return {
-      state,
       fields,
       popperRef,
-      startRefId,
-      endRefId,
       attributes,
       isPopperVisible,
-      formatedStartDate,
-      formatedEndDate,
       fromPage,
-      onChange,
+      startProps: computed(() => ({
+        ['data-start-id']: startRefId,
+        value: formatedStartDate.value,
+      })),
+      endProps: computed(() => ({
+        ['data-end-id']: endRefId,
+        value: formatedEndDate.value,
+      })),
+      inputEvents: {
+        click: onClick,
+        focus: setState,
+      },
+      onChange: change,
+      onDayMouseEnter: indicateMouseMove,
       onDayKeydown,
-      onDayMouseEnter,
-      onClick: () => {
-        if (isPopperVisible.value) return;
-        isPopperVisible.value = true;
-      },
-      onLeave: (event) => {
-        emit('blur', event);
-      },
       onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
     };
   },

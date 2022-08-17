@@ -52,7 +52,11 @@ const { masked, unmasked, typed } = useIMask(
   }
 );
 
-const { masked: namedayMasked, unmasked: namdayUnmasked, typed: namedayTyped } = useIMask(
+const {
+  masked: namedayMasked,
+  unmasked: namdayUnmasked,
+  typed: namedayTyped,
+} = useIMask(
   {
     element: computed(() => unrefElement(namedayInputRef.value?.inputRef)),
     initial: formdata.nameday,
@@ -209,11 +213,7 @@ export default {
 
       <div class="form-container flex">
         <div>
-          <w-date-picker
-            v-model="formdata.birthdate"
-            placement="bottom-start"
-            v-slot:default="{ value, click }"
-          >
+          <w-date-picker v-model="formdata.birthdate" placement="bottom-start" v-slot:default="{ value, click }">
             <w-input
               :value="value"
               v-validate="'required'"
@@ -283,27 +283,30 @@ export default {
           helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
           :helper-text-sr-only="true"
         >
-          <template v-slot:default="{ ariaDescribedby, startId, endId, startDate, endDate, click, focus }">
+          <template
+            v-slot:default="{
+              startProps,
+              endProps: { 'data-end-id': endId, value: endDate},
+              inputEvents,
+            }"
+          >
             <w-input-group>
               <w-input
-                :value="startDate"
+                v-bind="startProps"
                 v-validate="'required'"
                 name="checkin"
                 label="Check-in"
-                :data-start-id="startId"
                 readonly
-                @click="click"
-                @focus="focus"
+                v-on="inputEvents"
               />
               <w-input
                 :value="endDate"
+                :data-end-id="endId"
                 v-validate="'required'"
                 name="checkout"
                 label="Check-out"
-                :data-end-id="endId"
                 readonly
-                @click="click"
-                @focus="focus"
+                v-on="inputEvents"
               />
             </w-input-group>
           </template>

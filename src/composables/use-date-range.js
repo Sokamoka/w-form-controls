@@ -1,44 +1,33 @@
-import { computed, ref, unref, watch } from 'vue';
+import { noop, useTimeoutFn } from '@vueuse/core';
+import { computed, ref, unref } from 'vue';
 import { useId } from '~/composables/use-id.js';
 
-const useRangeState = () => {
-  const state = ref('start');
-
-  return {
-    state,
-    isStart: () => state.value === 'start',
-    step: () => {
-      if (state.value === 'start') {
-        state.value = 'end';
-      } else {
-        state.value = 'start';
-      }
-    },
-    set: (event) => {
-      if (event.target.dataset?.startId) {
-        state.value = 'start';
-        return;
-      }
-      state.value = 'end';
-    },
-  };
-};
-
-export default function useDaterRange({ initialStartDate = null, initialEndDate = null }) {
+export default function useDaterRange({
+  emit = noop,
+  initialStartDate = null,
+  initialEndDate = null,
+  closeDelay = 5000,
+  close = noop,
+}) {
   const startDate = ref(unref(initialStartDate));
   const endDate = ref(unref(initialEndDate));
   const startRefId = useId();
   const endRefId = useId();
+  const state = ref('start');
 
-  const state = useRangeState();
+  const isStart = computed(() => state.value === 'start');
+
+  const { start, stop } = useTimeoutFn(close, closeDelay, { immediate: false });
 
   const dateRange = computed(() => {
     if (!startDate.value && !endDate.value) return null;
     return { start: startDate.value, end: endDate.value };
   });
 
+  const isReady = computed(() => Boolean(startDate.value) && Boolean(endDate.value));
+
   const normalizedDateRange = () => {
-    if (!isReady()) return { start: startDate.value, end: endDate.value };
+    if (!isReady.value) return { start: startDate.value, end: endDate.value };
     if (startDate.value > endDate.value) {
       const startDateTemp = unref(startDate);
       const endDateTemp = unref(endDate);
@@ -48,27 +37,52 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
     return { start: startDate.value, end: endDate.value };
   };
 
-  const isReady = () => {
-    return Boolean(startDate.value) && Boolean(endDate.value);
+  const change = (event) => {
+    return isStart.value ? changeStart(event) : endChange(event);
   };
 
-  watch(state.state, (state) => {
+  const changeStart = (event) => {
+    startDate.value = event.date;
+    endDate.value = null;
+    emit('input', normalizedDateRange());
+    endDate.value = event.date;
+    setFocus('end');
+  };
+
+  const endChange = (event) => {
+    endDate.value = event.date;
+    emit('input', normalizedDateRange());
+    setFocus('end');
+    if (!startDate.value) {
+      startDate.value = event.date;
+      setFocus('start');
+      return;
+    }
+    stop();
+    start();
+  };
+
+  const setFocus = (state) => {
     const id = state === 'start' ? startRefId : endRefId;
     const element = document.querySelector(`[data-${state}-id="${id}"]`);
     element?.focus();
-  });
+  };
 
-  watch(
-    () => ({
-      start: unref(initialStartDate),
-      end: unref(initialEndDate),
-    }),
-    ({ start, end }) => {
-      console.log('Watch');
-      startDate.value = start || new Date();
-      endDate.value = end || start;
+  const setState = (event) => {
+    stop();
+    if (event.target.dataset?.startId) {
+      state.value = 'start';
+      return;
     }
-  );
+    state.value = 'end';
+  };
+
+  const indicateMouseMove = (event) => {
+    if (isStart.value) return;
+    if (initialEndDate.value) return;
+    if (!startDate.value) return;
+    endDate.value = event.date;
+  };
 
   const resetDates = () => {
     startDate.value = unref(initialStartDate);
@@ -82,8 +96,11 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
     startDate,
     endDate,
     dateRange,
-    resetDates,
     isReady,
-    normalizedDateRange,
+    stop,
+    change,
+    setState,
+    resetDates,
+    indicateMouseMove,
   };
 }
