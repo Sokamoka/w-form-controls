@@ -149,6 +149,8 @@ export default {
   setup(props, { emit }) {
     const inputRef = ref(null);
 
+    const internalValue = ref(null);
+
     const currentPlaceholder = computed(() => (props.placeholder ? props.placeholder : props.label));
 
     const modelValue = computed({
@@ -157,6 +159,7 @@ export default {
       },
       set(value) {
         if (props.maskedValue) return;
+        internalValue.value = value;
         emit('input', value);
       },
     });
@@ -181,8 +184,10 @@ export default {
     watch(
       () => props.value,
       (value) => {
-        console.log(value);
+        if (!props.name) return;
         if (!value) return;
+        if (value === internalValue.value) return;
+        console.log('WATCH:INPUT-VALUE', value);
         emit('blur', value);
       }
     );

@@ -29,13 +29,13 @@ const formdata = reactive({
   firstName: '',
   middleName: '',
   lastName: '',
-  // birthdate: null,
-  birthdate:  new Date(1980, 7, 19),
+  birthdate: null,
+  // birthdate:  new Date(1980, 7, 19),
   nameday: null,
   // nameday: new Date(2020, 7, 19),
-  check: null,
   phone: '',
   // phone: '36301234567',
+  check: null,
   // check: { start: new Date(2022, 8, 12), end: new Date(2022, 8, 18) },
 });
 
@@ -212,7 +212,6 @@ export default {
           <w-date-picker
             v-model="formdata.birthdate"
             placement="bottom-start"
-            append-to="body"
             v-slot:default="{ value, click }"
           >
             <w-input
@@ -292,7 +291,6 @@ export default {
                 name="checkin"
                 label="Check-in"
                 :data-start-id="startId"
-                :aria-describedby="ariaDescribedby"
                 readonly
                 @click="click"
                 @focus="focus"
@@ -303,7 +301,6 @@ export default {
                 name="checkout"
                 label="Check-out"
                 :data-end-id="endId"
-                :aria-describedby="ariaDescribedby"
                 readonly
                 @click="click"
                 @focus="focus"
@@ -319,7 +316,6 @@ export default {
           <w-date-picker
             v-model="formdata.birthdate"
             placement="bottom-start"
-            append-to="body"
             helper-text-disabled
             v-slot:default="{ value, click }"
           >

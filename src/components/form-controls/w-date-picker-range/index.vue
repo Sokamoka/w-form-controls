@@ -19,7 +19,6 @@
       :end-date="formatedEndDate"
       :start-id="startRefId"
       :end-id="endRefId"
-      :aria-describedby="`${name}-help`"
       :click="onClick"
       :focus="state.set"
     />
@@ -43,6 +42,7 @@
     <template v-slot:content>
       <Calendar
         :attributes="attributes"
+        :from-page="fromPage"
         v-bind="$attrs"
         @dayclick="onChange"
         @daykeydown="onDayKeydown"
@@ -54,7 +54,7 @@
 
 <script>
 import { computed, ref, watch } from 'vue';
-import { formatDate } from '@vueuse/core';
+import { formatDate, useDebounceFn, useTimeoutFn } from '@vueuse/core';
 import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import useDateRange from '~/composables/use-date-range.js';
@@ -63,6 +63,7 @@ import WInput from '../w-input/index.vue';
 import { PLACEMENTS } from '../w-popper/internal';
 import HelperText from '../w-input/helper-text.vue';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
+import { getMonth, getYear } from 'date-fns';
 // import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 
 export default {
@@ -143,6 +144,13 @@ export default {
     const formatedStartDate = computed(() => props.value?.start && formatDate(props.value.start, props.format));
     const formatedEndDate = computed(() => props.value?.end && formatDate(props.value.end, props.format));
 
+    // Minig az aktuális év/honap oldalra ugrik
+    const fromPage = computed(() => {
+      const year = getYear(props.value?.start);
+      const month = getMonth(props.value?.start) + 1;
+      return { month, year };
+    });
+
     const attributes = computed(() => {
       return [
         {
@@ -162,11 +170,8 @@ export default {
     const { fields } = useExpandedFieldProvider();
 
     const onDayMouseEnter = (event) => {
-      if (state.isStart()) {
-        startDate.value = event.date;
-        endDate.value = event.date;
-      }
-      endDate.value = event.date;
+      // if (state.isStart()) return;
+      // endDate.value = event.date;
     };
 
     const onChange = (event) => {
@@ -174,8 +179,7 @@ export default {
         startDate.value = event.date;
         endDate.value = null;
         emit('input', normalizedDateRange());
-        if (isReady()) isPopperVisible.value = false;
-        endDate.value = event.date;
+        // endDate.value = event.date;
         state.step();
         return;
       }
@@ -193,9 +197,6 @@ export default {
         event.event.preventDefault();
         onChange(event);
       }
-      // if (key.includes('Arrow')) {
-      //   onDayMouseEnter(event);
-      // }
     };
 
     watch(isPopperVisible, (visible) => {
@@ -213,6 +214,7 @@ export default {
       isPopperVisible,
       formatedStartDate,
       formatedEndDate,
+      fromPage,
       onChange,
       onDayKeydown,
       onDayMouseEnter,

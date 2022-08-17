@@ -98,7 +98,7 @@ export default {
 
     appendTo: {
       type: String,
-      default: '',
+      default: 'body',
     },
 
     helperTextDisabled: {

@@ -64,7 +64,8 @@ export default function useDaterRange({ initialStartDate = null, initialEndDate 
       end: unref(initialEndDate),
     }),
     ({ start, end }) => {
-      startDate.value = start || end;
+      console.log('Watch');
+      startDate.value = start || new Date();
       endDate.value = end || start;
     }
   );
