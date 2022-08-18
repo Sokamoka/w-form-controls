@@ -1,18 +1,18 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
+import { unrefElement } from '@vueuse/core';
 import { format, parse } from 'date-fns';
 import { InformationCircleIcon, EyeIcon, EyeOffIcon, PhoneIcon, CalendarIcon } from '@vue-hero-icons/outline';
-import WInput from './form-controls/w-input/index.vue';
-import ShowPassword from './form-controls/show-password/index.vue';
-import ShowPasswordButton from './form-controls/show-password/show-password-button.vue';
-import WInputGroup from './form-controls/w-input/input-group.vue';
-import WPopper from './form-controls/w-popper/index.vue';
-import useIMask from '../composables/use-imask';
-import WDatePicker from './form-controls/w-date-picker/index.vue';
 import useShowPassword from '../composables/use-show-password';
-import WDatePickerRange from './form-controls/w-date-picker-range/index.vue';
-import HelperText from './form-controls/w-input/helper-text.vue';
-import { unrefElement } from '@vueuse/core';
+import useIMask from '~/composables/use-imask';
+import WInput from '~/components/form-controls/w-input/index.vue';
+import ShowPassword from '~/components/form-controls/show-password/index.vue';
+import ShowPasswordButton from '~/components/form-controls/show-password/show-password-button.vue';
+import WInputGroup from '~/components/form-controls/w-input/input-group.vue';
+import WPopper from '~/components/form-controls/w-popper/index.vue';
+import WDatePicker from '~/components/form-controls/w-date-picker/index.vue';
+import WDatePickerRange from '~/components/form-controls/w-date-picker-range/index.vue';
+import HelperText from '~/components/form-controls/w-input/helper-text.vue';
 
 const maskedInputRef = ref(null);
 const namedayInputRef = ref(null);

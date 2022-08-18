@@ -1,13 +1,12 @@
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
-
 export default {
-  components: {
-    HelloWorld,
-  },
+  name: 'App'
 };
 </script>
 
 <template>
-  <HelloWorld />
+  <div>
+    Test
+    <router-view></router-view>
+  </div>
 </template>
