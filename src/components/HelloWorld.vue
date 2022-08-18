@@ -180,6 +180,17 @@ export default {
 
       <div class="form-container">
         <w-input
+          v-model="formdata.birthday"
+          label="Number"
+          type="tel"
+          helper-text="Please add valid password"
+          data-test="password-input"
+        >
+        </w-input>
+      </div>
+
+      <div class="form-container">
+        <w-input
           v-model="formdata.password2"
           v-validate="'required|min:6'"
           name="password2"
@@ -283,13 +294,7 @@ export default {
           helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
           :helper-text-sr-only="true"
         >
-          <template
-            v-slot:default="{
-              startProps,
-              endProps: { 'data-end-id': endId, value: endDate},
-              inputEvents,
-            }"
-          >
+          <template v-slot:default="{ startProps, endProps: { 'data-end-id': endId, value: endDate }, inputEvents }">
             <w-input-group>
               <w-input
                 v-bind="startProps"

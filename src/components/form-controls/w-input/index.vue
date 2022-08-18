@@ -66,7 +66,7 @@ export default {
 
   props: {
     value: {
-      type: [String, Date],
+      type: [String, Number, Date],
       default: '',
     },
 
