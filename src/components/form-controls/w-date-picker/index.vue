@@ -10,6 +10,7 @@
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
+    @leave="onLeave"
   >
     <slot name="default" :value="inputValue" :click="onClick" />
 
@@ -170,6 +171,7 @@ export default {
         isPopperVisible.value = true;
       },
       onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
+      onLeave: () => console.log('LEAVE'),
     };
   },
 };

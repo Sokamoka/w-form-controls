@@ -211,7 +211,7 @@ export default {
 
     // VeeValidate miatt kell egy blur event emit
     const onBlur = (event) => {
-      if (!event.relatedTarget) return;
+      // if (!event.relatedTarget) return;
       if (isInnerContent?.(event)) return;
       emit('blur', event);
     };

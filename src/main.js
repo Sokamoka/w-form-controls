@@ -4,6 +4,7 @@ import router from './routes/index.js';
 import App from './App.vue';
 import { dateRange } from './utils/validation-rules';
 import './assets/css/style.css';
+import './assets/css/tailwind.css';
 
 Vue.use(VeeValidate, {
   errorBagName: 'validatorErrors',

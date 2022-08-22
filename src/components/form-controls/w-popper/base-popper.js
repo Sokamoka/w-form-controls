@@ -91,7 +91,7 @@ export const Popover = defineComponent({
       window,
       'focus',
       (event) => {
-        // console.log('owner:', ownerDocument.value);
+        // console.log('Event:', event);
         // console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
         if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
         if (unrefElement(triggerRef)?.contains(event.target)) return;
