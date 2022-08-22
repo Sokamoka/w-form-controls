@@ -1,4 +1,4 @@
-import { ref, inject, provide, computed, defineComponent, watchEffect, nextTick } from 'vue';
+import { ref, inject, provide, computed, defineComponent, watchEffect } from 'vue';
 import { useDebounceFn, useEventListener, unrefElement } from '@vueuse/core';
 import { isEmpty, omit } from 'ramda';
 import { render } from '~/utils/vnode/render';
@@ -87,20 +87,20 @@ export const Popover = defineComponent({
     });
 
     // Handle focus out
-    useEventListener(
-      window,
-      'focus',
-      (event) => {
-        // console.log('Event:', event);
-        // console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
-        if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
-        if (unrefElement(triggerRef)?.contains(event.target)) return;
-        if (unrefElement(panelRef)?.contains(event.target)) return;
-        api.close();
-        emit('leave');
-      },
-      true
-    );
+    // useEventListener(
+    //   window,
+    //   'focus',
+    //   (event) => {
+    //     // console.log('Event:', event);
+    //     // console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
+    //     if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
+    //     if (unrefElement(triggerRef)?.contains(event.target)) return;
+    //     if (unrefElement(panelRef)?.contains(event.target)) return;
+    //     api.close();
+    //     emit('leave');
+    //   },
+    //   true
+    // );
 
     return {
       isOpen,

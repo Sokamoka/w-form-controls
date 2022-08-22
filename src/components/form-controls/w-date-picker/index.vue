@@ -45,11 +45,11 @@
 <script>
 import { computed, ref } from 'vue';
 import { formatDate, unrefElement } from '@vueuse/core';
-import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 import { focusIn, FOCUS_BEHAVIOR } from '../../../utils/focus-management';
 import { getMonth, getYear, isDate } from 'date-fns';
 import { PLACEMENTS } from '../w-popper/internal';
+import Calendar from '../calendar.vue';
 import WPopper from '../w-popper/index.vue';
 import HelperText from '../w-input/helper-text.vue';
 

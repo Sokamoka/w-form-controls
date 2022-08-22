@@ -20,7 +20,7 @@
 
     <slot name="helper" />
 
-    <div ref="popperRef" class="w-popper__popper">
+    <div ref="popperRef" class="w-popper__popper" tabindex="-1">
       <transition :name="transition">
         <popover-panel
           v-if="open"
