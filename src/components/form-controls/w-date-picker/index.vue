@@ -34,8 +34,10 @@
     <template v-slot:content>
       <Calendar
         :attributes="attributes"
-        v-bind="$attrs"
         :from-page="fromPage"
+        :min-date="minDate"
+        :max-date="maxDate"
+        v-bind="$attrs"
         @dayclick="onChange"
         @daykeydown="onDayKeydown"
       />
@@ -117,6 +119,16 @@ export default {
       type: Array,
       default: () => [0, 10],
     },
+
+    minDate: {
+      type: Date,
+      default: null,
+    },
+
+    maxDate: {
+      type: Date,
+      default: null,
+    }
   },
 
   setup(props, { emit }) {
@@ -156,6 +168,7 @@ export default {
     const { fields } = useExpandedFieldProvider();
 
     const onChange = (event) => {
+      if (event.isDisabled) return;
       emit('input', event.date);
       focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
       isPopperVisible.value = false;

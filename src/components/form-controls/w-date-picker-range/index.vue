@@ -35,6 +35,8 @@
       <Calendar
         :attributes="attributes"
         :from-page="fromPage"
+        :min-date="minDate"
+        :max-date="maxDate"
         v-bind="$attrs"
         @dayclick="onChange"
         @daykeydown="onDayKeydown"
@@ -129,6 +131,16 @@ export default {
     offset: {
       type: Array,
       default: () => [0, 10],
+    },
+
+    minDate: {
+      type: Date,
+      default: null,
+    },
+
+    maxDate: {
+      type: Date,
+      default: null,
     },
   },
 

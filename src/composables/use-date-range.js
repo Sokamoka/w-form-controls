@@ -38,6 +38,7 @@ export default function useDaterRange({
   };
 
   const change = (event) => {
+    if (event.isDisabled) return;
     return isStart.value ? changeStart(event) : endChange(event);
   };
 
@@ -78,6 +79,7 @@ export default function useDaterRange({
   };
 
   const indicateMouseMove = (event) => {
+    if (event.isDisabled) return;
     if (isStart.value) return;
     if (initialEndDate.value) return;
     if (!startDate.value) return;
