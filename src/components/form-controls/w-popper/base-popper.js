@@ -49,7 +49,6 @@ export const Popover = defineComponent({
     const panelRef = ref(null);
     const wrapperRef = ref(null);
 
-    const ownerDocument = computed(() => unrefElement(wrapperRef)?.ownerDocument);
     const isDisabled = computed(() => props.disabled);
 
     const api = {
@@ -91,7 +90,7 @@ export const Popover = defineComponent({
     //   window,
     //   'focus',
     //   (event) => {
-    //     // console.log('Event:', event);
+    //     // console.log('Event:', !unrefElement(triggerRef)?.contains(event.relatedTarget));
     //     // console.log('handle focus:', triggerId, event, unrefElement(triggerRef)?.contains(event.relatedTarget));
     //     if (!unrefElement(triggerRef)?.contains(event.relatedTarget)) return;
     //     if (unrefElement(triggerRef)?.contains(event.target)) return;

@@ -3,8 +3,7 @@
     as="div"
     ref="popperRef"
     :placement="placement"
-    :show-triggers="['focusWithin']"
-    :hide-triggers="[]"
+    :triggers="['focusWithin']"
     :append-to="appendTo"
     theme="content-within"
     :shown="isPopperVisible"
@@ -46,12 +45,12 @@
 <script>
 import { computed, ref, watch } from 'vue';
 import { formatDate } from '@vueuse/core';
-import Calendar from 'v-calendar/lib/components/calendar.umd';
 import { CalendarIcon } from '@vue-hero-icons/outline';
+import { PLACEMENTS } from '../w-popper/internal';
 import useDateRange from '~/composables/use-date-range.js';
 import WPopper from '../w-popper/index.vue';
 import WInput from '../w-input/index.vue';
-import { PLACEMENTS } from '../w-popper/internal';
+import Calendar from '../calendar.vue';
 import HelperText from '../w-input/helper-text.vue';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
 import { getMonth, getYear } from 'date-fns';
@@ -164,7 +163,10 @@ export default {
       ];
     });
 
-    usePopperContentProvider(computed(() => popperRef?.value?.popperRef));
+    usePopperContentProvider({
+      triggerRef: popperRef.value?.tooltipRef?.triggerRef,
+      contentRef: computed(() => popperRef.value?.popperRef),
+    });
 
     const { fields } = useExpandedFieldProvider();
 

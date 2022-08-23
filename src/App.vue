@@ -6,7 +6,15 @@ export default {
 
 <template>
   <div class="w-screen">
-    <div>Link1 Link2</div>
+    <div>
+      <div class="container">
+        <div class="flex gap-5">
+          <router-link to="/">Form</router-link>
+          <router-link to="/date-pickers">Date Pickers</router-link>
+        </div>
+      </div>
+    </div>
     <router-view></router-view>
+    <div tabindex="0"></div>
   </div>
 </template>

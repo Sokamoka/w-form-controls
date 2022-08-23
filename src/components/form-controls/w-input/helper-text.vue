@@ -37,7 +37,8 @@ const isHelperSrOnly = computed(() => props.helperSrOnly && !props.error);
   text-align: left;
 
   > div {
-    flex-grow: 1;
+    flex: 1;
+    padding-left: 10px;
   }
 
   .icon {

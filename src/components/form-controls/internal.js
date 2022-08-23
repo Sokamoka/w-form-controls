@@ -5,38 +5,24 @@ import { computed, inject, onUnmounted, provide, ref, watch } from 'vue';
 const ExpandedFieldContext = Symbol('ExpandedFieldContext');
 const PopperContentContext = Symbol('PopperContentContext');
 
-export const usePopperContentProvider = (contentRef = ref(null)) => {
-  const reference = ref(null);
-  let inputEvent = noop;
-
+export const usePopperContentProvider = ({ triggerRef, contentRef }) => {
   const api = {
-    inputEvent: (handler) => {
-      console.log('handler');
-      inputEvent = handler;
-    },
-    onInput: () => {
-      console.log('onInput');
-      inputEvent();
-    },
     check: (event) => {
-      return reference.value?.contains(event.relatedTarget);
+      if (triggerRef?.contains(event.relatedTarget)) return true;
+      return contentRef.value?.contains(event.relatedTarget);
     },
   };
   provide(PopperContentContext, api);
-
-  watch(contentRef, (content) => {
-    reference.value = content;
-  });
-
-  return {
-    onInput: api.onInput,
-  };
 };
 
-export const usePopperContent = () => {
+export const usePopperContent = (handler = () => noop) => {
   const api = inject(PopperContentContext, null);
 
-  return api?.check;
+  const onBlur = (event) => {
+    if (api?.check(event)) return;
+    handler();
+  };
+  return onBlur;
 };
 
 export const useExpandedFieldProvider = () => {

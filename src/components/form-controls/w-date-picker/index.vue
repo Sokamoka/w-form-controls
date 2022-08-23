@@ -10,7 +10,6 @@
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
-    @leave="onLeave"
   >
     <slot name="default" :value="inputValue" :click="onClick" />
 
@@ -137,7 +136,10 @@ export default {
       ];
     });
 
-    usePopperContentProvider(computed(() => popperRef?.value?.popperRef));
+    usePopperContentProvider({
+      triggerRef: popperRef.value?.tooltipRef?.triggerRef,
+      contentRef: computed(() => popperRef.value?.popperRef),
+    });
 
     const { fields } = useExpandedFieldProvider();
 
@@ -171,7 +173,6 @@ export default {
         isPopperVisible.value = true;
       },
       onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
-      onLeave: () => console.log('LEAVE'),
     };
   },
 };

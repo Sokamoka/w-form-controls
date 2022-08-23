@@ -185,14 +185,13 @@ export default {
       () => props.value,
       (value) => {
         if (!props.name) return;
-        if (!value) return;
         if (value === internalValue.value) return;
-        console.log('WATCH:INPUT-VALUE', value);
         emit('blur', value);
       }
     );
 
-    const isInnerContent = usePopperContent();
+    // VeeValidate miatt kell egy blur event emit
+    const onBlur = usePopperContent(() => emit('blur'));
 
     const expandedField = useExpandedField({
       name: props.name,
@@ -208,12 +207,6 @@ export default {
       if (hasError.value) return true;
       return false;
     });
-
-    // VeeValidate miatt kell egy blur event emit
-    const onBlur = (event) => {
-      if (isInnerContent?.(event)) return;
-      emit('blur', event);
-    };
 
     return {
       inputRef,
