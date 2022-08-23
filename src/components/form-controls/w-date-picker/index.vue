@@ -5,8 +5,10 @@
     :placement="placement"
     :triggers="['focusWithin']"
     :append-to="appendTo"
-    theme="content-within"
     :shown="isPopperVisible"
+    :arrow-padding="arrowPadding"
+    :offset="offset"
+    theme="content-within"
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
@@ -98,12 +100,22 @@ export default {
 
     appendTo: {
       type: String,
-      default: 'body',
+      default: '',
     },
 
     helperTextDisabled: {
       type: Boolean,
       default: false,
+    },
+
+    arrowPadding: {
+      type: [Number, Object],
+      default: 10,
+    },
+
+    offset: {
+      type: Array,
+      default: () => [0, 10],
     },
   },
 
@@ -171,6 +183,7 @@ export default {
       onClick: () => {
         if (isPopperVisible.value) return;
         isPopperVisible.value = true;
+        focusIn(unrefElement(popperRef.value?.tooltipRef.triggerRef), FOCUS_BEHAVIOR.first);
       },
       onPopperVisibleUpdate: (value) => (isPopperVisible.value = value),
     };

@@ -3,16 +3,31 @@
     <h1 class="text-4xl font-bold mb-20">Date Pickers</h1>
 
     <h2 class="text-2xl font-bold text-left mb-3">Basic usage</h2>
-    <div class="mb-10 border border-gray-300 p-12 bg-white">
+    <div class="mb-10 border border-gray-300 p-12 bg-white space-y-10">
       <div class="max-w-xl mx-auto">
-        <w-date-picker v-model="states.birthdate" placement="bottom-start" v-slot:default="{ value, click }">
+        <w-date-picker v-model="states.birthdate" placement="top" v-slot:default="{ value, click }">
+          <w-input :value="value" label="Birth date" readonly @click="click">
+            <template v-slot:append>
+              <CalendarIcon tabindex="-1" class="icon-append is-helper" />
+            </template>
+          </w-input>
+        </w-date-picker>
+      </div>
+
+      <div class="max-w-xl mx-auto">
+        <w-date-picker
+          v-model="states.birthdate2"
+          placement="bottom-end"
+          append-to="body"
+          v-slot:default="{ value, click }"
+        >
           <w-input
             :value="value"
             v-validate="'required'"
             name="birthdate"
-            label="Birth date"
+            label="Birth date with validation"
             helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
-            :helper-text-sr-only="false"
+            :helper-text-sr-only="true"
             readonly
             @click="click"
           >
@@ -22,17 +37,20 @@
           </w-input>
         </w-date-picker>
       </div>
-    </div>
 
-    <h2 class="text-2xl font-bold text-left mb-3">With helper text</h2>
-    <div class="mb-10 border border-gray-300 p-12 bg-white">
       <div class="max-w-xl mx-auto">
-        <w-date-picker v-model="states.birthdate2" placement="bottom-start" v-slot:default="{ value, click }">
+        <w-date-picker
+          v-model="states.birthdate3"
+          placement="bottom-start"
+          append-to="body"
+          v-slot:default="{ value, click }"
+        >
           <w-input
             :value="value"
             v-validate="'required'"
             name="birthdate2"
             label="Birth date"
+            placeholder="Birth date with helper text"
             helper-text="Press the arrow keys to navigate by day."
             readonly
             @click="click"
@@ -45,6 +63,35 @@
       </div>
     </div>
 
+    <h2 class="text-2xl font-bold text-left mb-3">With icon trigger</h2>
+    <div class="mb-10 border border-gray-300 p-12 bg-white">
+      <div class="max-w-xl mx-auto">
+        {{ states.nameday }}
+        <WInput
+          ref="namedayInputRef"
+          v-model="states.nameday"
+          :masked-value="formattedNameday"
+          v-validate="'required|date_format:yyyy-MM-dd'"
+          name="nameday"
+          label="Name day"
+          readonly
+        >
+          <template v-slot:append>
+            <w-date-picker
+              v-model="states.nameday"
+              placement="bottom-end"
+              :arrow-padding="19"
+              :offset="[0, 15]"
+              v-slot:default="{ click }"
+            >
+              <CalendarIcon tabindex="0" class="icon-append is-button" @click="click" />
+            </w-date-picker>
+          </template>
+        </WInput>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-left mb-3">Date Range</h2>
     <div class="mb-10 border border-gray-300 p-12 bg-white">
       <div class="max-w-xl mx-auto">
         <w-date-picker-range
@@ -83,18 +130,24 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import WDatePicker from '~/components/form-controls/w-date-picker/index.vue';
 import WDatePickerRange from '~/components/form-controls/w-date-picker-range/index.vue';
 import WInputGroup from '~/components/form-controls/w-input/input-group.vue';
 import WInput from '~/components/form-controls/w-input/index.vue';
+import { formatDate } from '@vueuse/core';
 
 const states = reactive({
   birthdate: null,
   birthdate2: null,
+  birthdate3: null,
+  birthdate4: null,
+  nameday: null,
   check: null,
 });
+
+const formattedNameday = computed(() => states.nameday && formatDate(states.nameday, 'YYYY-MM-DD'));
 </script>
 
 <script>
@@ -106,18 +159,32 @@ export default {
 </script>
 
 <style lang="scss">
-icon-prepend {
+.icon-prepend {
   display: block;
   margin: 0 0 0 15px;
   stroke: $color-gray-basic;
 }
+
 .icon-append {
   display: block;
   margin: 0 15px 0 0;
   stroke: $color-gray-basic;
+  outline: none;
 
   &.is-text {
     stroke: $color-pink-basic;
+  }
+}
+
+.is-button {
+  border-radius: 100%;
+  background-color: $color-gray-lighter;
+  outline: 8px solid $color-gray-lighter;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-gray-light;
+    outline-color: $color-gray-light;
   }
 }
 </style>

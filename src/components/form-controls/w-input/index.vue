@@ -190,8 +190,8 @@ export default {
       }
     );
 
-    // VeeValidate miatt kell egy blur event emit
-    const onBlur = usePopperContent(() => emit('blur'));
+    // VeeValidate miatt kell egy blur event emit, hogy a validator validálni tudja a mezőt.
+    const onBlur = usePopperContent((event) => emit('blur', event));
 
     const expandedField = useExpandedField({
       name: props.name,

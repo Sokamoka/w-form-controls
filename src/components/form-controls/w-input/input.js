@@ -82,7 +82,9 @@ export const InputWrapper = defineComponent({
     };
 
     const onFocusOut = (event) => {
-      if (unrefElement(inputWrapperRef).contains(event.relatedTarget)) return;
+      const { relatedTarget, target } = event;
+      // Calendar-ban az év választásnél a relatedTarget null ezért akkor a target a megoldás.
+      if (unrefElement(inputWrapperRef).contains(relatedTarget || target)) return;
       isOnFocus.value = false;
       emit('blur', event);
     };

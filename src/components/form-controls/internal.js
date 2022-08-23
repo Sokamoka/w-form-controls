@@ -20,7 +20,7 @@ export const usePopperContent = (handler = () => noop) => {
 
   const onBlur = (event) => {
     if (api?.check(event)) return;
-    handler();
+    handler(event);
   };
   return onBlur;
 };

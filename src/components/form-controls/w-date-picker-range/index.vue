@@ -5,8 +5,10 @@
     :placement="placement"
     :triggers="['focusWithin']"
     :append-to="appendTo"
-    theme="content-within"
     :shown="isPopperVisible"
+    :arrow-padding="arrowPadding"
+    :offset="offset"
+    theme="content-within"
     handle-resize
     hide-on-click-outside
     @update:shown="onPopperVisibleUpdate"
@@ -117,6 +119,16 @@ export default {
     helperTextSrOnly: {
       type: Boolean,
       default: true,
+    },
+
+    arrowPadding: {
+      type: [Number, Object],
+      default: 10,
+    },
+
+    offset: {
+      type: Array,
+      default: () => [0, 10],
     },
   },
 
