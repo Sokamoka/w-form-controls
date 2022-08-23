@@ -2,6 +2,21 @@ import { noop } from '@vueuse/core';
 import { findIndex, isEmpty, propEq, slice } from 'ramda';
 import { computed, inject, onUnmounted, provide, ref, watch } from 'vue';
 
+export const INPUT_TYPES = [
+  'date',
+  'datetime-local',
+  'email',
+  'month',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'time',
+  'url',
+  'week',
+];
+
 const ExpandedFieldContext = Symbol('ExpandedFieldContext');
 const PopperContentContext = Symbol('PopperContentContext');
 

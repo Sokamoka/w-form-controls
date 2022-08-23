@@ -48,7 +48,7 @@ import { CheckIcon } from '@vue-hero-icons/outline';
 import { InputControl, InputWrapper, InputInput, InputLabel } from './input';
 import useVeeValidator from '~/composables/use-vee-validator.js';
 import HelperText from './helper-text.vue';
-import { useExpandedField, usePopperContent } from '../internal';
+import { useExpandedField, usePopperContent, INPUT_TYPES } from '../internal';
 
 export default {
   name: 'W-Input',
@@ -78,6 +78,7 @@ export default {
     type: {
       type: String,
       default: 'text',
+      validator: (value) => INPUT_TYPES.includes(value),
     },
 
     label: {
