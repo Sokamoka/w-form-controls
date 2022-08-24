@@ -206,7 +206,7 @@ export default {
       if (expandedField) return false;
       if (props.helperTextDisabled) return false;
       if (hasError.value) return true;
-      return false;
+      return true;
     });
 
     return {
