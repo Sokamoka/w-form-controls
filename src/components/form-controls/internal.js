@@ -67,7 +67,7 @@ export const useExpandedFieldProvider = () => {
 export const useExpandedField = ({ name, message, inputId, helperText, helperTextSrOnly }) => {
   const api = inject(ExpandedFieldContext, null);
 
-  if (!api || !name) return null;
+  if (!api) return false;
 
   watch(inputId, (id) => {
     if (!id) return;
@@ -75,5 +75,5 @@ export const useExpandedField = ({ name, message, inputId, helperText, helperTex
   });
   onUnmounted(() => api?.unregister(name));
 
-  return api;
+  return Boolean(api);
 };
