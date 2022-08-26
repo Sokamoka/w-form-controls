@@ -176,6 +176,7 @@ export const PopoverButton = defineComponent({
         if (!el) return;
         if (!unrefElement(api.panelRef)) return;
         if (unrefElement(api.panelRef)?.contains(el)) return;
+        if (unrefElement(api.triggerRef)?.contains(el)) return;
         api.close();
       }, props.closeDelay),
 

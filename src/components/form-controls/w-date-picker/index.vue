@@ -161,7 +161,6 @@ export default {
     });
 
     usePopperContentProvider({
-      triggerRef: popperRef.value?.tooltipRef?.triggerRef,
       contentRef: computed(() => popperRef.value?.popperRef),
     });
 

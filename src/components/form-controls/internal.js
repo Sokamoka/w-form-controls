@@ -20,10 +20,9 @@ export const INPUT_TYPES = [
 const ExpandedFieldContext = Symbol('ExpandedFieldContext');
 const PopperContentContext = Symbol('PopperContentContext');
 
-export const usePopperContentProvider = ({ triggerRef, contentRef }) => {
+export const usePopperContentProvider = ({ contentRef }) => {
   const api = {
     check: (event) => {
-      if (triggerRef?.contains(event.relatedTarget)) return true;
       return contentRef.value?.contains(event.relatedTarget);
     },
   };

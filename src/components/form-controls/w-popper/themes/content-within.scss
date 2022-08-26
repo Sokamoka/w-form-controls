@@ -1,4 +1,6 @@
 .content-within {
+  display: flex;
+  flex-direction: column;
   padding: 5px;
   font-size: 16px;
   font-weight: 400;

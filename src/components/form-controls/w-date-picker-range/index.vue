@@ -32,6 +32,7 @@
       </div>
     </template>
     <template v-slot:content>
+      <slot name="header" :state="state" :close="close"></slot>
       <Calendar
         :attributes="attributes"
         :from-page="fromPage"
@@ -42,12 +43,13 @@
         @daykeydown="onDayKeydown"
         @daymouseenter="onDayMouseEnter"
       />
+      <slot name="footer" :state="state" :close="close"></slot>
     </template>
   </WPopper>
 </template>
 
 <script>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { formatDate } from '@vueuse/core';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import { PLACEMENTS } from '../w-popper/internal';
@@ -57,7 +59,6 @@ import WInput from '../w-input/index.vue';
 import Calendar from '../calendar.vue';
 import HelperText from '../w-input/helper-text.vue';
 import { useExpandedFieldProvider, usePopperContentProvider } from '../internal';
-import { getMonth, getYear } from 'date-fns';
 
 export default {
   name: 'DatePickerRange',
@@ -148,30 +149,18 @@ export default {
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
 
-    const {
-      dateRange,
-      startRefId,
-      endRefId,
-      indicateMouseMove,
-      setState,
-      change,
-      stop: stopCloseTimer,
-    } = useDateRange({
+    const close = () => (isPopperVisible.value = false);
+
+    const { state, dateRange, startRefId, endRefId, indicateMouseMove, setState, change, fromPage } = useDateRange({
       initialStartDate: computed(() => props.value?.start),
       initialEndDate: computed(() => props.value?.end),
-      emit,
-      close: () => (isPopperVisible.value = false),
+      closeSelected: false,
+      close,
+      update: (payload) => emit('input', payload),
     });
 
     const formatedStartDate = computed(() => props.value?.start && formatDate(props.value.start, props.format));
     const formatedEndDate = computed(() => props.value?.end && formatDate(props.value.end, props.format));
-
-    // Minig az aktuális év/honap oldalra ugrik
-    const fromPage = computed(() => {
-      const year = getYear(props.value?.start);
-      const month = getMonth(props.value?.start) + 1;
-      return { month, year };
-    });
 
     const attributes = computed(() => {
       return [
@@ -188,7 +177,6 @@ export default {
     });
 
     usePopperContentProvider({
-      triggerRef: popperRef.value?.tooltipRef?.triggerRef,
       contentRef: computed(() => popperRef.value?.popperRef),
     });
 
@@ -200,9 +188,6 @@ export default {
         event.event.preventDefault();
         change(event);
       }
-      if (key.includes('Arrow')) {
-        stopCloseTimer();
-      }
     };
 
     const onClick = () => {
@@ -210,17 +195,14 @@ export default {
       isPopperVisible.value = true;
     };
 
-    watch(isPopperVisible, (visible) => {
-      if (visible) return;
-      stopCloseTimer();
-    });
-
     return {
       fields,
       popperRef,
       attributes,
       isPopperVisible,
       fromPage,
+      state,
+      close,
       startProps: computed(() => ({
         ['data-start-id']: startRefId,
         value: formatedStartDate.value,

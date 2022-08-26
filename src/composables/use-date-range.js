@@ -1,12 +1,13 @@
-import { noop, useTimeoutFn } from '@vueuse/core';
 import { computed, ref, unref } from 'vue';
+import { getMonth, getYear } from 'date-fns';
+import { noop } from '@vueuse/core';
 import { useId } from '~/composables/use-id.js';
 
 export default function useDaterRange({
-  emit = noop,
   initialStartDate = null,
   initialEndDate = null,
-  closeDelay = 5000,
+  closeSelected = true,
+  update = noop,
   close = noop,
 }) {
   const startDate = ref(unref(initialStartDate));
@@ -16,8 +17,6 @@ export default function useDaterRange({
   const state = ref('start');
 
   const isStart = computed(() => state.value === 'start');
-
-  const { start, stop } = useTimeoutFn(close, closeDelay, { immediate: false });
 
   const dateRange = computed(() => {
     if (!startDate.value && !endDate.value) return null;
@@ -44,23 +43,21 @@ export default function useDaterRange({
 
   const changeStart = (event) => {
     startDate.value = event.date;
-    endDate.value = null;
-    emit('input', normalizedDateRange());
-    endDate.value = event.date;
+    update(normalizedDateRange());
+    endDate.value = endDate.value || event.date;
     setFocus('end');
   };
 
   const endChange = (event) => {
     endDate.value = event.date;
-    emit('input', normalizedDateRange());
+    update(normalizedDateRange());
     setFocus('end');
     if (!startDate.value) {
       startDate.value = event.date;
       setFocus('start');
       return;
     }
-    stop();
-    start();
+    if (closeSelected) close();
   };
 
   const setFocus = (state) => {
@@ -70,7 +67,6 @@ export default function useDaterRange({
   };
 
   const setState = (event) => {
-    stop();
     if (event.target.dataset?.startId) {
       state.value = 'start';
       return;
@@ -91,6 +87,14 @@ export default function useDaterRange({
     endDate.value = unref(initialEndDate);
   };
 
+  // Minig az aktuális év/honap oldalra ugrik
+  const fromPage = computed(() => {
+    const dateType = state.value === 'start' ? startDate.value : endDate.value;
+    const year = getYear(dateType);
+    const month = getMonth(dateType) + 1;
+    return { month, year };
+  });
+
   return {
     startRefId,
     endRefId,
@@ -99,7 +103,7 @@ export default function useDaterRange({
     endDate,
     dateRange,
     isReady,
-    stop,
+    fromPage,
     change,
     setState,
     resetDates,

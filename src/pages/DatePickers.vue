@@ -122,7 +122,7 @@
     </div>
 
     <h2 class="text-2xl font-bold text-left mb-3">Date Range</h2>
-    <div class="mb-10 border border-gray-300 p-12 bg-white">
+    <div class="mb-10 border border-gray-300 p-12 bg-white space-y-10">
       <div class="max-w-xl mx-auto">
         <w-date-picker-range
           v-model="states.check"
@@ -157,12 +157,62 @@
           </template>
         </w-date-picker-range>
       </div>
+
+      <div class="max-w-xl mx-auto">
+        {{ states.departure }}
+        <w-date-picker-range
+          v-model="states.departure"
+          placement="bottom"
+          format="YYYY-MM-DD"
+          :columns="2"
+          :min-date="minDate"
+          :max-date="maxDate"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          :helper-text-sr-only="true"
+        >
+          <template v-slot:default="{ startProps, endProps: { 'data-end-id': endId, value: endDate }, inputEvents }">
+            <w-input-group>
+              <w-input
+                v-bind="startProps"
+                v-validate="'required'"
+                name="departure"
+                label="Departure"
+                readonly
+                v-on="inputEvents"
+              />
+              <w-input
+                :value="endDate"
+                :masked-value="oneWayLabel"
+                :data-end-id="endId"
+                v-validate="'required'"
+                name="return"
+                label="Return"
+                readonly
+                v-on="inputEvents"
+              />
+            </w-input-group>
+          </template>
+          <template v-slot:header="{ state }">
+            <div class="flex p-3">
+              {{ state === 'start' ? 'Departure' : 'Return' }}
+            </div>
+          </template>
+          <template v-slot:footer="{ close }">
+            <div class="flex justify-end p-3">
+              <button class="px-4 py-2 text-pink-500 font-bold underline uppercase text-xs" @click="setOneWay(true, close)">
+                One way
+              </button>
+              <button class="px-4 py-2 bg-pink-500 text-white font-bold rounded-md" @click="setOneWay(false, close)">OK</button>
+            </div>
+          </template>
+        </w-date-picker-range>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { addDays, subDays } from 'date-fns';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import WDatePicker from '~/components/form-controls/w-date-picker/index.vue';
@@ -178,12 +228,23 @@ const states = reactive({
   birthdate4: null,
   nameday: null,
   check: null,
+  departure: null,
 });
 
 const formattedNameday = computed(() => states.nameday && formatDate(states.nameday, 'YYYY-MM-DD'));
 
-const minDate = subDays(new Date(), 10);
-const maxDate = addDays(new Date(), 20);
+const minDate = subDays(new Date(), 60);
+const maxDate = addDays(new Date(), 30);
+
+const isOneWay = ref(false);
+const oneWayLabel = computed(() => {
+  return isOneWay.value ? 'One Way' : '';
+});
+const setOneWay = (value, close) => {
+  isOneWay.value = value;
+  if (value) states.departure.end = null;
+  close();
+};
 </script>
 
 <script>
