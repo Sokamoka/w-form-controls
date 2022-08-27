@@ -1,12 +1,16 @@
-import { computed, ref, unref } from 'vue';
+import { computed, ref, unref, watch } from 'vue';
 import { getMonth, getYear } from 'date-fns';
 import { noop } from '@vueuse/core';
 import { useId } from '~/composables/use-id.js';
+
+const STATE_START = 'start';
+const STATE_END = 'end';
 
 export default function useDaterRange({
   initialStartDate = null,
   initialEndDate = null,
   closeSelected = true,
+  indicateRangeSelection = true,
   update = noop,
   close = noop,
 }) {
@@ -14,9 +18,9 @@ export default function useDaterRange({
   const endDate = ref(unref(initialEndDate));
   const startRefId = useId();
   const endRefId = useId();
-  const state = ref('start');
+  const state = ref(STATE_START);
 
-  const isStart = computed(() => state.value === 'start');
+  const isStart = computed(() => state.value === STATE_START);
 
   const dateRange = computed(() => {
     if (!startDate.value && !endDate.value) return null;
@@ -45,36 +49,37 @@ export default function useDaterRange({
     startDate.value = event.date;
     update(normalizedDateRange());
     endDate.value = endDate.value || event.date;
-    setFocus('end');
+    setFocus(STATE_END);
   };
 
   const endChange = (event) => {
     endDate.value = event.date;
     update(normalizedDateRange());
-    setFocus('end');
+    setFocus(STATE_END);
     if (!startDate.value) {
       startDate.value = event.date;
-      setFocus('start');
+      setFocus(STATE_START);
       return;
     }
     if (closeSelected) close();
   };
 
   const setFocus = (state) => {
-    const id = state === 'start' ? startRefId : endRefId;
+    const id = state === STATE_START ? startRefId : endRefId;
     const element = document.querySelector(`[data-${state}-id="${id}"]`);
     element?.focus();
   };
 
   const setState = (event) => {
     if (event.target.dataset?.startId) {
-      state.value = 'start';
+      state.value = STATE_START;
       return;
     }
-    state.value = 'end';
+    state.value = STATE_END;
   };
 
   const indicateMouseMove = (event) => {
+    if (!indicateRangeSelection) return;
     if (event.isDisabled) return;
     if (isStart.value) return;
     if (initialEndDate.value) return;
@@ -94,6 +99,17 @@ export default function useDaterRange({
     const month = getMonth(dateType) + 1;
     return { month, year };
   });
+
+  watch(
+    () => ({
+      start: unref(initialStartDate),
+      end: unref(initialEndDate),
+    }),
+    ({ start, end }) => {
+      startDate.value = start || end; // Calendérban, ha null akkor minden nam szakasz látszik
+      endDate.value = end || start;
+    }
+  );
 
   return {
     startRefId,

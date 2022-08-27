@@ -167,8 +167,10 @@
           :columns="2"
           :min-date="minDate"
           :max-date="maxDate"
-          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
+          :close-after-selection="false"
           :helper-text-sr-only="true"
+          :indicate-range-selection="false"
+          helper-text="Press the arrow keys to navigate by day, Home and End to navigate to week ends, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year"
         >
           <template v-slot:default="{ startProps, endProps: { 'data-end-id': endId, value: endDate }, inputEvents }">
             <w-input-group>
@@ -184,8 +186,6 @@
                 :value="endDate"
                 :masked-value="oneWayLabel"
                 :data-end-id="endId"
-                v-validate="'required'"
-                name="return"
                 label="Return"
                 readonly
                 v-on="inputEvents"

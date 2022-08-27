@@ -143,6 +143,16 @@ export default {
       type: Date,
       default: null,
     },
+
+    closeAfterSelection: {
+      type: Boolean,
+      default: true,
+    },
+
+    indicateRangeSelection: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   setup(props, { emit }) {
@@ -154,7 +164,8 @@ export default {
     const { state, dateRange, startRefId, endRefId, indicateMouseMove, setState, change, fromPage } = useDateRange({
       initialStartDate: computed(() => props.value?.start),
       initialEndDate: computed(() => props.value?.end),
-      closeSelected: false,
+      closeSelected: props.closeAfterSelection,
+      indicateRangeSelection: props.indicateRangeSelection,
       close,
       update: (payload) => emit('input', payload),
     });
