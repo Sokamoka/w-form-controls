@@ -25,6 +25,10 @@ export function getFocusableElements(container = document.body) {
   return Array.from(container.querySelectorAll(focusableSelector));
 }
 
+export function isFocusableElement(element) {
+  return element?.matches(focusableSelector);
+}
+
 export function focusIn(container, focusBehavior, loop = false) {
   const ownerDocument = container[0]?.ownerDocument ?? document;
 

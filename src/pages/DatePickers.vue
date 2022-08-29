@@ -199,13 +199,28 @@
           </template>
           <template v-slot:footer="{ close }">
             <div class="flex justify-end p-3">
-              <button class="px-4 py-2 text-pink-500 font-bold underline uppercase text-xs" @click="setOneWay(true, close)">
+              <button
+                class="px-4 py-2 text-pink-500 font-bold underline uppercase text-xs"
+                @click="setOneWay(true, close)"
+              >
                 One way
               </button>
-              <button class="px-4 py-2 bg-pink-500 text-white font-bold rounded-md" @click="setOneWay(false, close)">OK</button>
+              <button class="px-4 py-2 bg-pink-500 text-white font-bold rounded-md" @click="setOneWay(false, close)">
+                OK
+              </button>
             </div>
           </template>
         </w-date-picker-range>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-left mb-3">Date picker for Mobile</h2>
+    <div class="mb-10 border border-gray-300 p-12 bg-white">
+      <div class="max-w-xl mx-auto">
+        {{ states.nameday }}
+        <w-date-picker-mobile v-model="states.nameday" v-slot="{ value }">
+          <w-input :value="value" v-validate="'required'" name="nameday" label="Name day" readonly> </w-input>
+        </w-date-picker-mobile>
       </div>
     </div>
   </div>
@@ -214,12 +229,13 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { addDays, subDays } from 'date-fns';
+import { formatDate } from '@vueuse/core';
 import { CalendarIcon } from '@vue-hero-icons/outline';
 import WDatePicker from '~/components/form-controls/w-date-picker/index.vue';
+import WDatePickerMobile from '~/components/form-controls/w-date-picker-mobile/index.vue';
 import WDatePickerRange from '~/components/form-controls/w-date-picker-range/index.vue';
 import WInputGroup from '~/components/form-controls/w-input/input-group.vue';
 import WInput from '~/components/form-controls/w-input/index.vue';
-import { formatDate } from '@vueuse/core';
 
 const states = reactive({
   birthdate: null,

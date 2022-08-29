@@ -69,16 +69,6 @@ export default {
       default: null,
     },
 
-    name: {
-      type: String,
-      default: '',
-    },
-
-    scope: {
-      type: String,
-      default: '',
-    },
-
     label: {
       type: String,
       default: '',
@@ -93,11 +83,6 @@ export default {
     format: {
       type: String,
       default: 'MM/DD/YYYY',
-    },
-
-    helperText: {
-      type: String,
-      default: '',
     },
 
     appendTo: {
@@ -128,12 +113,13 @@ export default {
     maxDate: {
       type: Date,
       default: null,
-    }
+    },
   },
 
   setup(props, { emit }) {
     const popperRef = ref(null);
     const isPopperVisible = ref(false);
+
     const inputValue = computed(() => {
       // Todo: input mask miatt kell
       if (!isDate(props.value)) return '';

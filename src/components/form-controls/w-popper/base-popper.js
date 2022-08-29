@@ -296,10 +296,6 @@ export const PopoverPanel = defineComponent({
         focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
         event.preventDefault();
         api.close();
-
-        // nextTick(() => {
-        //   console.log('active', document.activeElement);
-        // });
       });
     }
 
