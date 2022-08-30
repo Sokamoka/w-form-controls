@@ -218,8 +218,16 @@
     <div class="mb-10 border border-gray-300 p-12 bg-white">
       <div class="max-w-xl mx-auto">
         {{ states.nameday }}
-        <w-date-picker-mobile v-model="states.nameday" v-slot="{ value }">
-          <w-input :value="value" v-validate="'required'" name="nameday2" label="Name day" readonly />
+        <w-date-picker-mobile v-model="states.nameday" v-slot="{ value }" :available-dates="availableDates">
+          <w-input
+            :value="value"
+            v-validate="'required'"
+            name="nameday2"
+            label="Name day"
+            helper-text="Press Space/Enter to open Date Picker"
+            helper-text-sr-only
+            readonly
+          />
         </w-date-picker-mobile>
       </div>
     </div>
@@ -261,6 +269,8 @@ const setOneWay = (value, close) => {
   if (value) states.departure.end = null;
   close();
 };
+
+const availableDates = ["2022-08-04T00:00:00", "2022-08-11T00:00:00", "2022-08-16T00:00:00", "2022-08-23T00:00:00"];
 </script>
 
 <script>
