@@ -1,23 +1,23 @@
-import { ref, nextTick, watch, unref, onBeforeUnmount } from "vue";
-import { createPopper } from "@popperjs/core";
+import { ref, nextTick, watch, unref, onBeforeUnmount } from 'vue';
+import { createPopper } from '@popperjs/core';
 
 export default function usePopper({
   offset,
   isOpen,
-  boundary = "",
+  boundary = '',
   popperNode,
   triggerNode,
   arrowPadding,
   modifiers = [],
   overflowPadding,
-  placement = "top",
+  placement = 'top',
 }) {
   const popperInstance = ref(null);
 
   const setPopperEventListeners = (enabled) =>
     popperInstance.value?.setOptions((options) => ({
       ...options,
-      modifiers: [...options.modifiers, { name: "eventListeners", enabled }],
+      modifiers: [...options.modifiers, { name: 'eventListeners', enabled }],
     }));
 
   const enablePopperEventListeners = () => setPopperEventListeners(true);
@@ -29,19 +29,19 @@ export default function usePopper({
       placement: unref(placement),
       modifiers: [
         {
-          name: "offset",
+          name: 'offset',
           options: {
             offset,
           },
         },
         {
-          name: "arrow",
+          name: 'arrow',
           options: {
             padding: arrowPadding,
           },
         },
         {
-          name: "preventOverflow",
+          name: 'preventOverflow',
           options: {
             padding: overflowPadding,
             boundary: unref(boundary),
@@ -64,7 +64,7 @@ export default function usePopper({
 
       await initializePopper(trigger, popper);
     },
-    { immediate: true, flush: "post" }
+    { immediate: true, flush: 'post' }
   );
 
   watch([() => isOpen.value, placement], async ([isOpen]) => {

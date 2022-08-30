@@ -8,6 +8,7 @@
     @leave="$emit('leave')"
   >
     <popover-button
+      ref="triggerRef"
       :as="as"
       :triggers="triggers"
       :show-triggers="showTriggers"
@@ -233,9 +234,9 @@ export default {
   setup(props, { emit }) {
     const tooltipRef = ref(null);
     const popperRef = ref(null);
+    const triggerRef = ref(null);
 
     const isOpen = computed(() => tooltipRef?.value?.isOpen ?? false);
-    const triggerRef = computed(() => tooltipRef?.value?.triggerRef ?? null);
     const triggerNode = computed(() => unrefElement(triggerRef));
     const popperNode = computed(() => unrefElement(popperRef));
 
@@ -274,6 +275,7 @@ export default {
 
     return {
       isOpen,
+      triggerRef,
       popperRef,
       tooltipRef,
       popperPlacement,
