@@ -1,21 +1,21 @@
-import { h } from "vue";
-import { concat, isEmpty, mergeDeepWith, pick } from "ramda";
+import { h } from 'vue';
+import { concat, isEmpty, mergeDeepWith, pick } from 'ramda';
 
 const DATA_KEYS = [
-  "class",
-  "staticClass",
-  "style",
-  "staticStyle",
-  "attrs",
-  "props",
-  "domProps",
-  "on",
-  "nativeOn",
-  "directives",
-  "scopedSlots",
-  "slot",
-  "ref",
-  "key",
+  'class',
+  'staticClass',
+  'style',
+  'staticStyle',
+  'attrs',
+  'props',
+  'domProps',
+  'on',
+  'nativeOn',
+  'directives',
+  'scopedSlots',
+  'slot',
+  'ref',
+  'key',
 ];
 
 export const cloneVNode = (vnode, data) => {
@@ -23,11 +23,10 @@ export const cloneVNode = (vnode, data) => {
 
   const isComponent = !isEmpty(vnode.componentOptions ?? {});
   const tag = vnode.componentOptions?.Ctor ?? vnode.tag;
-  const vNodeData = isComponent
-    ? extractData(vnode, data)
-    : mergeDeepWith(concat, vnode.data, data);
+  const vNodeData = isComponent ? extractData(vnode, data) : mergeDeepWith(concat, vnode.data, data);
   const children = vnode.componentOptions?.children ?? vnode.children;
 
+  if (isComponent) return vnode.context.$createElement(tag, vNodeData, children);
   return h(tag, vNodeData, children);
 };
 

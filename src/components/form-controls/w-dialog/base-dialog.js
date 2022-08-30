@@ -104,7 +104,7 @@ export const Dialog = defineComponent({
       as: this.$props.as,
     };
 
-    return render({ data, slots, slot });
+    return render({ data, slots, slot, name: 'Dialog' });
   },
 });
 
@@ -143,12 +143,10 @@ export const DialogButton = defineComponent({
     const data = {
       as: this.$props.as,
       ref: api.buttonRef,
-      attrs: {
-        tabindex: '0',
-      },
       on: {
         click: api.open,
         keydown: this.onKeydown,
+        ...this.$listeners,
       },
     };
 

@@ -219,7 +219,7 @@
       <div class="max-w-xl mx-auto">
         {{ states.nameday }}
         <w-date-picker-mobile v-model="states.nameday" v-slot="{ value }">
-          <w-input :value="value" v-validate="'required'" name="nameday" label="Name day" readonly> </w-input>
+          <w-input :value="value" v-validate="'required'" name="nameday2" label="Name day" readonly />
         </w-date-picker-mobile>
       </div>
     </div>

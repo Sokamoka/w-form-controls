@@ -4,20 +4,23 @@
       <slot :value="formattedValue" :close="close" />
     </DialogButton>
 
-    <div ref="dialogPanelRef">
+    <div ref="dialogPanelRef" role="dialog" :aria-modal="open ? true : undefined">
       <transition name="fade">
         <div v-if="open" class="dialog relative z-50">
           <div class="dialog-backdrop fixed inset-0 bg-black/30" aria-hidden="true"></div>
           <div class="fixed inset-0 flex items-center justify-center p-4">
-            <DialogPanel static class="dialog-panel w-full max-w-xs rounded bg-white flex flex-col" v-slot="{ close }">
+            <DialogPanel static class="dialog-panel w-full max-w-xs rounded bg-white flex flex-col">
               <Calendar
                 :attributes="attributes"
                 :from-page="fromPage"
+                :min-date="minDate"
+                :max-date="maxDate"
                 is-expanded
+                v-bind="$attrs"
                 @dayclick="onChange"
                 @daykeydown="onDayKeydown"
               />
-              <div class="flex flex-row justify-end space-x-5 px-5">
+              <div class="flex flex-row justify-end space-x-5 p-5">
                 <button class="border border-gray-500 focus:border-blue-500 p-3" @click="onCancel(close)">
                   Cancel
                 </button>
@@ -37,6 +40,7 @@ import { computed, onMounted, ref } from 'vue';
 import useVCalendar from '../../../composables/use-v-calendar';
 import { appendTo } from '../../../utils/dom';
 import Calendar from '../Calendar.vue';
+import { usePopperContentProvider } from '../internal';
 import { Dialog, DialogButton, DialogPanel } from '../w-dialog/base-dialog.js';
 
 export default {
@@ -57,6 +61,16 @@ export default {
       default: 'MM/DD/YYYY',
     },
 
+    minDate: {
+      type: Date,
+      default: null,
+    },
+
+    maxDate: {
+      type: Date,
+      default: null,
+    },
+
     appendTo: {
       type: String,
       default: 'body',
@@ -75,6 +89,10 @@ export default {
         close();
       },
       cancel: (close) => close(),
+    });
+
+    usePopperContentProvider({
+      contentRef: computed(() => dialogPanelRef.value),
     });
 
     onMounted(() => appendTo(unrefElement(dialogPanelRef), props.appendTo));
