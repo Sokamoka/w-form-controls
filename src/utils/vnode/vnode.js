@@ -1,4 +1,3 @@
-import { h } from 'vue';
 import { concat, isEmpty, mergeDeepWith, pick } from 'ramda';
 
 const DATA_KEYS = [
@@ -26,8 +25,7 @@ export const cloneVNode = (vnode, data) => {
   const vNodeData = isComponent ? extractData(vnode, data) : mergeDeepWith(concat, vnode.data, data);
   const children = vnode.componentOptions?.children ?? vnode.children;
 
-  if (isComponent) return vnode.context.$createElement(tag, vNodeData, children);
-  return h(tag, vNodeData, children);
+  return vnode.context.$createElement(tag, vNodeData, children);
 };
 
 const extractData = (vnode, customData) => {

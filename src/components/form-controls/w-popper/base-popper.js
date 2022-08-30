@@ -336,15 +336,16 @@ export const PopoverPanel = defineComponent({
       },
     };
     const slots = this.$scopedSlots;
-
     const slot = { close: api.close };
+
+    const strategy = this.$props.static ? 'static' : this.$props.unmount ? 'unmount' : 'hidden';
 
     return render({
       slot,
       data: { ...this.$props, ...propsWeControl },
       slots,
       visible: this.visible,
-      strategy: 'unmount',
+      strategy,
       name: 'PopoverPanel',
     });
   },
