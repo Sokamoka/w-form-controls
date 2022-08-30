@@ -94,7 +94,7 @@ export default function useDaterRange({
 
   // Minig az aktuális év/honap oldalra ugrik
   const fromPage = computed(() => {
-    const dateType = state.value === 'start' ? startDate.value : endDate.value;
+    const dateType = state.value === 'start' ? initialStartDate.value : initialEndDate.value;
     const year = getYear(dateType);
     const month = getMonth(dateType) + 1;
     return { month, year };
