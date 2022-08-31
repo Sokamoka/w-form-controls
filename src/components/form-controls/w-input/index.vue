@@ -1,5 +1,5 @@
 <template>
-  <InputControl class="w-input-control" v-slot:default="{ id }">
+  <InputControl class="w-input-control" v-slot:default="{ id, empty }">
     <InputWrapper
       v-model="modelValue"
       :class="[
@@ -17,6 +17,7 @@
       <slot name="prepend" />
 
       <div class="w-input-container">
+        <div v-if="!empty && hint" class="hint">{{ hint }}</div>
         <InputInput
           ref="inputRef"
           :type="type"
@@ -88,6 +89,11 @@ export default {
     },
 
     placeholder: {
+      type: String,
+      default: '',
+    },
+
+    hint: {
       type: String,
       default: '',
     },
@@ -271,6 +277,17 @@ export default {
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.2s ease-in-out;
+}
+
+.w-input-wrapper .hint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 30px 20px 10px;
+  font-size: 16px;
+  line-height: 20px;
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 .w-input-wrapper input:not(:placeholder-shown) {
