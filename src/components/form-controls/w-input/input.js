@@ -1,5 +1,5 @@
 import { computed, defineComponent, inject, provide, reactive, ref } from 'vue';
-import { unrefElement } from '@vueuse/core';
+import { noop, onClickOutside, unrefElement, useEventListener } from '@vueuse/core';
 import { omit } from 'ramda';
 import { useId } from '../../../composables/use-id';
 import { render } from '../../../utils/vnode/render';
@@ -65,6 +65,11 @@ export const InputWrapper = defineComponent({
       type: Boolean,
       dafault: false,
     },
+
+    handleFocusout: {
+      type: Boolean,
+      dafault: false,
+    },
   },
 
   setup(props, { emit }) {
@@ -81,13 +86,12 @@ export const InputWrapper = defineComponent({
       emit('focus', event);
     };
 
-    const onFocusOut = (event) => {
-      const { relatedTarget, target } = event;
-      // Calendar-ban az év választásnél a relatedTarget null ezért akkor a target a megoldás.
-      if (unrefElement(inputWrapperRef).contains(relatedTarget || target)) return;
-      isOnFocus.value = false;
-      emit('blur', event);
-    };
+    useInputLeaveEvents({
+      handleFocusout: props.handleFocusout,
+      target: inputWrapperRef,
+      focusState: isOnFocus,
+      cb: (event) => emit('blur', event),
+    });
 
     const api = {
       value,
@@ -101,12 +105,11 @@ export const InputWrapper = defineComponent({
 
     provide(InputContext, api);
 
-    const control = useInputControl();
-    if (control) {
-      control.id = computed(() => api.inputRef?.value?.id);
-      control.empty = isEmpty;
-      control.focus = isOnFocus;
-    }
+    useInputControl({
+      id: computed(() => api.inputRef?.value?.id),
+      empty: isEmpty,
+      focus: isOnFocus,
+    });
 
     return {
       id: computed(() => api.inputRef?.value?.id),
@@ -115,7 +118,6 @@ export const InputWrapper = defineComponent({
       isOnFocus,
       isValid,
       onFocusIn,
-      onFocusOut,
     };
   },
 
@@ -134,7 +136,6 @@ export const InputWrapper = defineComponent({
       ref: 'inputWrapperRef',
       on: {
         focusin: this.onFocusIn,
-        focusout: this.onFocusOut,
       },
     };
 
@@ -252,29 +253,31 @@ export const InputGroup = defineComponent({
   },
 });
 
-// export const useInputGroup = ({ name, message, inputId }) => {
-//   const api = inject(InputGroupContext, null);
+const useInputLeaveEvents = ({ handleFocusout, target, focusState, cb = noop }) => {
+  if (!handleFocusout) return;
 
-//   if (api && name) {
-//     watch(inputId, (id) => {
-//       if (!id) return;
+  useEventListener(document, 'focusin', (event) => {
+    if (!focusState.value) return;
+    if (unrefElement(target).contains(event.target)) return;
+    focusState.value = false;
+    cb(event);
+  });
 
-//       api.register({ id, name, message });
-//     });
+  onClickOutside(target, (event) => {
+    if (!focusState.value) return;
+    if (unrefElement(target).contains(event.target)) return;
+    focusState.value = false;
+    cb(event);
+  });
+};
 
-//     onUnmounted(() => api.unregister(name));
-//   }
-
-//   return {
-//     isInGroup: Boolean(api),
-//   };
-// };
-
-export const useInputControl = () => {
+export const useInputControl = ({ id, empty, focus }) => {
   const control = inject(InputControlContext, null);
-  return control;
+  if (!control) return;
+  control.id = id;
+  control.empty = empty;
+  control.focus = focus;
 };
 
 const InputContext = Symbol('InputContext');
-// const InputGroupContext = Symbol('InputGroupContext');
 const InputControlContext = Symbol('InputControlContext');

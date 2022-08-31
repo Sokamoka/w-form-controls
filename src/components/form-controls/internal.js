@@ -23,7 +23,7 @@ const PopperContentContext = Symbol('PopperContentContext');
 export const usePopperContentProvider = ({ contentRef }) => {
   const api = {
     check: (event) => {
-      return contentRef.value?.contains(event.relatedTarget);
+      return contentRef.value?.contains(event.target);
     },
   };
   provide(PopperContentContext, api);

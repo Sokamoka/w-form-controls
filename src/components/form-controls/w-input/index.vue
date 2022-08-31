@@ -11,6 +11,7 @@
       ]"
       :disabled="disabled"
       :readonly="readonly"
+      :handle-focusout="Boolean(name)"
       @blur="onBlur"
     >
       <slot name="prepend" />
