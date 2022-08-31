@@ -68,3 +68,8 @@ export function focusIn(container, focusBehavior, loop = false) {
     offset += direction;
   } while (nextElement !== ownerDocument.activeElement);
 }
+
+export const handleElementFocus = (element) => {
+  if (isFocusableElement(element)) return element?.focus(); // Ha pl. button
+  focusIn(element, FOCUS_BEHAVIOR.first); // Pl. input komponens
+};

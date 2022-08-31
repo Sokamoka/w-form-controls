@@ -38,7 +38,7 @@ export const InputControl = defineComponent({
     const slots = this.$scopedSlots;
     const data = { as: this.$props.as };
 
-    return render({ data, slots, slot });
+    return render({ data, slots, slot, name: 'InputControl' });
   },
 });
 

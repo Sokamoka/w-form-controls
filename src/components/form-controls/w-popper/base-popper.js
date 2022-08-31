@@ -4,7 +4,7 @@ import { isEmpty, omit } from 'ramda';
 import { render } from '~/utils/vnode/render';
 import { useId } from '~/composables/use-id';
 import { HIDE_EVENT_MAP, SHOW_EVENT_MAP, useTriggerEvents } from './internal';
-import { focusIn, FOCUS_BEHAVIOR, getFocusableElements } from '../../../utils/focus-management';
+import { focusIn, FOCUS_BEHAVIOR, getFocusableElements, handleElementFocus } from '../../../utils/focus-management';
 
 const PopoverContext = Symbol('PopoverContext');
 
@@ -162,7 +162,7 @@ export const PopoverButton = defineComponent({
     const api = usePopoverContext('PopoverButton');
 
     return {
-      el: api.triggerRef,
+      triggerRef: api.triggerRef,
       onClick: () => {
         api.togglePopover();
       },
@@ -170,7 +170,6 @@ export const PopoverButton = defineComponent({
       onEnter: useDebounceFn(() => api.open(), props.openDelay),
 
       onLeave: useDebounceFn((event) => {
-        // console.log('onLeave', event);
         if (isEmpty(getFocusableElements(unrefElement(api.panelRef)))) return api.close();
         const el = event.relatedTarget;
         if (!el) return;
@@ -235,7 +234,7 @@ export const PopoverButton = defineComponent({
     );
 
     const propsWeControl = {
-      ref: 'el',
+      ref: 'triggerRef',
       attrs: {
         id: api.triggerId,
         'aria-describedby': api.panelId,
@@ -292,9 +291,7 @@ export const PopoverPanel = defineComponent({
 
         if (unrefElement(api.triggerRef)?.contains(target)) return;
         if (unrefElement(api.panelRef)?.contains(target)) return;
-        // unrefElement(api.triggerRef)?.focus();
-        focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
-        event.preventDefault();
+        handleElementFocus(unrefElement(api.triggerRef));
         api.close();
       });
     }
@@ -311,8 +308,7 @@ export const PopoverPanel = defineComponent({
             if (!unrefElement(api.panelRef)?.contains(document.activeElement)) return;
             event.preventDefault();
             event.stopPropagation();
-            // unrefElement(api.triggerRef)?.focus();
-            focusIn(unrefElement(api.triggerRef), FOCUS_BEHAVIOR.first);
+            handleElementFocus(unrefElement(api.triggerRef));
             api.close();
             break;
           default:

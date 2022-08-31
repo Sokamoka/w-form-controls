@@ -12,6 +12,7 @@ export default {
           <router-link to="/">Form</router-link>
           <router-link to="/inputs">Inputs</router-link>
           <router-link to="/date-pickers">Date Pickers</router-link>
+          <router-link to="/selection">Selection</router-link>
         </div>
       </div>
     </div>
