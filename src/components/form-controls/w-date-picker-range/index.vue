@@ -35,7 +35,8 @@
       <slot name="header" :state="state" :close="close"></slot>
       <Calendar
         :attributes="attributes"
-        :from-page="fromPage"
+        :from-date="fromDate"
+        :to-date="toDate"
         :min-date="minDate"
         :max-date="maxDate"
         v-bind="$attrs"
@@ -161,7 +162,7 @@ export default {
 
     const close = () => (isPopperVisible.value = false);
 
-    const { state, dateRange, startRefId, endRefId, indicateMouseMove, setState, change, fromPage } = useDateRange({
+    const { state, dateRange, startRefId, endRefId, indicateMouseMove, setState, change, fromDate, toDate } = useDateRange({
       initialStartDate: computed(() => props.value?.start),
       initialEndDate: computed(() => props.value?.end),
       closeSelected: props.closeAfterSelection,
@@ -211,7 +212,8 @@ export default {
       popperRef,
       attributes,
       isPopperVisible,
-      fromPage,
+      fromDate,
+      toDate,
       state,
       close,
       startProps: computed(() => ({

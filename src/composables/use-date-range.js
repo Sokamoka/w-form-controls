@@ -1,5 +1,4 @@
 import { computed, ref, unref, watch } from 'vue';
-import { getMonth, getYear } from 'date-fns';
 import { noop } from '@vueuse/core';
 import { useId } from '~/composables/use-id.js';
 
@@ -93,11 +92,14 @@ export default function useDaterRange({
   };
 
   // Minig az aktuális év/honap oldalra ugrik
-  const fromPage = computed(() => {
-    const dateType = state.value === 'start' ? initialStartDate.value : initialEndDate.value;
-    const year = getYear(dateType);
-    const month = getMonth(dateType) + 1;
-    return { month, year };
+  const fromDate = computed(() => {
+    if (state.value === 'end') return undefined;
+    return initialStartDate.value;
+  });
+
+  const toDate = computed(() => {
+    if (state.value === 'start') return undefined;
+    return initialEndDate.value;
   });
 
   watch(
@@ -119,7 +121,8 @@ export default function useDaterRange({
     endDate,
     dateRange,
     isReady,
-    fromPage,
+    fromDate,
+    toDate,
     change,
     setState,
     resetDates,
