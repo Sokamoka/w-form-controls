@@ -39,7 +39,7 @@ import { unrefElement } from '@vueuse/core';
 import { computed, onMounted, ref } from 'vue';
 import useVCalendar from '../../../composables/use-v-calendar';
 import { appendTo } from '../../../utils/dom';
-import Calendar from '../Calendar.vue';
+import Calendar from '../calendar.vue';
 import { usePopperContentProvider } from '../internal';
 import { Dialog, DialogButton, DialogPanel } from '../w-dialog/base-dialog.js';
 
