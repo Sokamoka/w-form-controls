@@ -96,6 +96,14 @@
         Departure: {{ states.departure }}
       </pre>
     </div>
+
+    <div class="container mx-auto">
+      {{ states.dropdown }}
+      <w-dropdown v-model="states.dropdown" v-slot:default="{ value }">
+        <button type="button" class="bg-pink-500 w-40 focus:bg-pink-300">{{ value ? value : 'Dropdown' }}</button>
+        <!-- <w-input :value="value" label="Destination" readonly /> -->
+      </w-dropdown>
+    </div>
   </div>
 </template>
 
@@ -105,6 +113,8 @@ import WDatePickerRange from '~/components/form-controls/w-date-picker-range/ind
 import WInputGroup from '~/components/form-controls/w-input/input-group.vue';
 import WInput from '~/components/form-controls/w-input/index.vue';
 import WPopper from '~/components/form-controls/w-popper/index.vue';
+import WDropdown from '../components/form-controls/w-dropdown/index.vue';
+// import { groupedStationsByCountryCode } from '../utils/mock-stations.js';
 
 const isOneWay = ref(false);
 
@@ -112,6 +122,7 @@ const states = reactive({
   origin: null,
   destination: null,
   departure: null,
+  dropdown: '',
 });
 
 const oneWayLabel = computed(() => {
@@ -122,4 +133,6 @@ const setOneWay = (value, close) => {
   if (value) states.departure.end = null;
   close();
 };
+
+// const destinations = groupedStationsByCountryCode();
 </script>
