@@ -99,8 +99,8 @@
 
     <div class="container mx-auto">
       {{ states.dropdown }}
-      <w-dropdown v-model="states.dropdown" v-slot:default="{ value }">
-        <button type="button" class="bg-pink-500 w-40 focus:bg-pink-300">{{ value ? value : 'Dropdown' }}</button>
+      <w-dropdown v-model="states.dropdown" :options="people" placement="bottom-start" as="template" v-slot:default="{ value }">
+        <button type="button" class="bg-pink-500 w-40 focus:bg-pink-300">{{ value ? value.name : 'Dropdown' }}</button>
         <!-- <w-input :value="value" label="Destination" readonly /> -->
       </w-dropdown>
     </div>
@@ -135,4 +135,12 @@ const setOneWay = (value, close) => {
 };
 
 // const destinations = groupedStationsByCountryCode();
+
+const people = [
+    { value: 1, name: 'Durward Reynolds', unavailable: false },
+    { value: 2, name: 'Kenton Towne', unavailable: false },
+    { value: 3, name: 'Therese Wunsch', unavailable: false },
+    { value: 4, name: 'Benedict Kessler', unavailable: true },
+    { value: 5, name: 'Katelyn Rohan', unavailable: false },
+  ]
 </script>

@@ -5,7 +5,7 @@
     </DialogButton>
 
     <div ref="dialogPanelRef" role="dialog" :aria-modal="open ? true : undefined">
-      <transition name="fade">
+      <transition name="popper-fade">
         <div v-if="open" class="dialog relative z-50">
           <div class="dialog-backdrop" aria-hidden="true"></div>
           <div class="fixed inset-0 flex items-center justify-center p-4">
