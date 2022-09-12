@@ -99,10 +99,29 @@
 
     <div class="container mx-auto">
       {{ states.dropdown }}
-      <w-dropdown v-model="states.dropdown" :options="people" placement="bottom-start" as="template" v-slot:default="{ value }">
+      <w-dropdown
+        v-model="states.dropdown"
+        :options="people"
+        placement="bottom-start"
+        as="template"
+        v-slot:default="{ value }"
+      >
         <button type="button" class="bg-pink-500 w-40 focus:bg-pink-300">{{ value ? value.name : 'Dropdown' }}</button>
         <!-- <w-input :value="value" label="Destination" readonly /> -->
       </w-dropdown>
+    </div>
+
+    <div class="container mx-auto">
+      {{ states.autocomplete }}
+      <w-autocomplete
+        v-model="states.autocomplete"
+        :options="people"
+        placement="bottom-start"
+        v-slot:default="{ value, input, change, keydown }"
+        :display-value="(person) => person.name"
+      >
+        <w-input :value="value" label="Destination" v-on="{ input, change, keydown }" />
+      </w-autocomplete>
     </div>
   </div>
 </template>
@@ -114,6 +133,7 @@ import WInputGroup from '~/components/form-controls/w-input/input-group.vue';
 import WInput from '~/components/form-controls/w-input/index.vue';
 import WPopper from '~/components/form-controls/w-popper/index.vue';
 import WDropdown from '../components/form-controls/w-dropdown/index.vue';
+import WAutocomplete from '../components/form-controls/w-autocomplete/index.vue';
 // import { groupedStationsByCountryCode } from '../utils/mock-stations.js';
 
 const isOneWay = ref(false);
@@ -123,6 +143,7 @@ const states = reactive({
   destination: null,
   departure: null,
   dropdown: '',
+  autocomplete: undefined,
 });
 
 const oneWayLabel = computed(() => {
@@ -137,10 +158,10 @@ const setOneWay = (value, close) => {
 // const destinations = groupedStationsByCountryCode();
 
 const people = [
-    { value: 1, name: 'Durward Reynolds', unavailable: false },
-    { value: 2, name: 'Kenton Towne', unavailable: false },
-    { value: 3, name: 'Therese Wunsch', unavailable: false },
-    { value: 4, name: 'Benedict Kessler', unavailable: true },
-    { value: 5, name: 'Katelyn Rohan', unavailable: false },
-  ]
+  { value: 1, name: 'Durward Reynolds', unavailable: false },
+  { value: 2, name: 'Kenton Towne', unavailable: false },
+  { value: 3, name: 'Therese Wunsch', unavailable: false },
+  { value: 4, name: 'Benedict Kessler', unavailable: true },
+  { value: 5, name: 'Katelyn Rohan', unavailable: false },
+];
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <dropdown v-model="modelValue" v-slot:default="{ open, value }" @open="onUpdateDhown" @close="onUpdateDhown">
+  <dropdown v-model="modelValue" v-slot:default="{ open, value }" @open="onUpdatIsOpen" @close="onUpdatIsOpen">
     <dropdown-button ref="buttonRef" :as="as">
       <slot :value="value" />
     </dropdown-button>
@@ -94,7 +94,7 @@ export default {
       console.log(unrefElement(popperRef.value));
     });
 
-    const onUpdateDhown = (value) => {
+    const onUpdatIsOpen = (value) => {
       isOpen.value = value;
     }
 
@@ -103,7 +103,7 @@ export default {
       modelValue,
       buttonRef,
       popperRef,
-      onUpdateDhown,
+      onUpdatIsOpen,
     };
   },
 };

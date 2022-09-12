@@ -1,7 +1,6 @@
 import {
   computed,
   defineComponent,
-  h,
   inject,
   provide,
   ref,
@@ -12,21 +11,20 @@ import {
   watch,
   watchEffect,
 } from 'vue';
+import { noop, onClickOutside, unrefElement } from '@vueuse/core';
 import { useId } from '../../../composables/use-id';
 import { calculateActiveIndex, Focus } from '../../../utils/calculate-active-index';
 // import { isFocusableElement } from '../../utils/focus-management';
 import { render } from '../../../utils/vnode/render';
-import { unrefElement } from '@vueuse/core';
-import { head } from 'ramda';
 
-const DropdownContext = Symbol('DropdownContext');
+const AutocompleteContext = Symbol('AutocompleteContext');
 
 const nextFrame = (cb) => {
   requestAnimationFrame(() => requestAnimationFrame(cb));
 };
 
 const useDropdownContext = (component) => {
-  const context = inject(DropdownContext, null);
+  const context = inject(AutocompleteContext, null);
 
   if (context === null) {
     const err = new Error(`<${component} /> is missing a parent <Dropdown /> component.`);
@@ -37,13 +35,13 @@ const useDropdownContext = (component) => {
   return context;
 };
 
-export const Dropdown = defineComponent({
-  name: 'Dropdown',
+export const Autocomplete = defineComponent({
+  name: 'Autocomplete',
 
   props: {
     value: {
       type: [Object, String],
-      default: '',
+      default: undefined,
     },
 
     as: {
@@ -55,6 +53,11 @@ export const Dropdown = defineComponent({
       type: Boolean,
       default: false,
     },
+
+    displayValue: {
+      type: Function,
+      default: noop,
+    },
   },
 
   setup(props, { emit }) {
@@ -63,19 +66,33 @@ export const Dropdown = defineComponent({
     const optionsRef = ref(null);
     const activeOptionIndex = ref(null);
 
-    const modelValue = computed(() => props.value);
     const options = ref([]);
 
     const isPanelVisible = ref(false);
 
+    const [value, onValueChange, onInput] = useModelValueControl(
+      computed(() => props.value),
+      (value) => emit('input', value),
+      (value) => {
+        if (typeof props.displayValue === 'function') {
+          onInput(props.displayValue(value)) ?? '';
+        } else if (typeof value === 'string') {
+          onInput(value);
+        } else {
+          onInput('');
+        }
+      }
+    );
+
     const api = {
-      value: modelValue,
+      value,
       isPanelVisible,
       buttonRef,
       optionsRef,
       // activeOptionIndex,
       options,
       disabled,
+      onInput,
       openPanel() {
         if (disabled) return;
         if (isPanelVisible.value) return;
@@ -91,6 +108,11 @@ export const Dropdown = defineComponent({
         emit('blur');
         emit('open', false);
       },
+
+      // syncInputValue() {
+      //   const value = api.value.value;
+      //   console.log(api.buttonRef.value);
+      // },
 
       activeOptionIndex: computed(() => {
         if (activeOptionIndex.value === null && options.value.length > 0) {
@@ -128,12 +150,14 @@ export const Dropdown = defineComponent({
         console.log('selectActiveOption', api.activeOptionIndex.value);
         if (api.activeOptionIndex.value === null) {
           // api.select(head(options.value)?.dataRef.value);
-          return;
+          // return;
         }
 
         let { dataRef, id } = options.value[api.activeOptionIndex.value];
         console.log({ dataRef, id });
         // api.select(dataRef.value);
+        onValueChange(dataRef.value);
+        api.goToOption(Focus.SPECIFIC, id);
       },
 
       focus() {
@@ -161,7 +185,12 @@ export const Dropdown = defineComponent({
       },
     };
 
-    provide(DropdownContext, api);
+    provide(AutocompleteContext, api);
+
+    onClickOutside(api.optionsRef, (event) => {
+      if (unrefElement(buttonRef)?.contains(event.target)) return;
+      api.closePanel();
+    });
 
     // Handle outside click
     // useWindowEvent('mousedown', (event) => {
@@ -182,14 +211,14 @@ export const Dropdown = defineComponent({
 
     return {
       open: isPanelVisible,
-      modelValue,
+      value,
     };
   },
 
   render() {
     const slot = {
       open: this.open,
-      value: this.modelValue,
+      value: this.value?.value,
     };
     const slots = this.$scopedSlots;
 
@@ -197,46 +226,79 @@ export const Dropdown = defineComponent({
       as: this.$props.as,
     };
 
-    return render({ slot, slots, data, name: 'Dropdown' });
+    return render({ slot, slots, data, name: 'Autocomplete' });
   },
 });
 
-export const DropdownButton = defineComponent({
-  name: 'DropdownButton',
+export const AutocompleteInput = defineComponent({
+  name: 'AutocompleteInput',
 
   props: {
     as: {
       type: String,
-      default: 'template',
+      default: 'input',
     },
   },
 
-  setup() {
-    const api = useDropdownContext('DropdownButton');
+  setup(_, { emit }) {
+    const api = useDropdownContext('AutocompleteInput');
     const id = `wa-dropdown-button-${useId()}`;
 
     const value = computed(() => api.value);
 
     const onKeyDown = (event) => {
       switch (event.key) {
-        case 'Space':
+        // Ref: https://www.w3.org/TR/wai-aria-practices-1.2/#keyboard-interaction-13
+
         case 'Enter':
+          if (!api.isPanelVisible.value) return;
+          event.preventDefault();
+          event.stopPropagation();
+
+          api.selectActiveOption();
+          api.closePanel();
+          break;
         case 'ArrowDown':
           event.preventDefault();
+          event.stopPropagation();
+          if (api.isPanelVisible.value) {
+            api.goToOption(Focus.NEXT);
+            return;
+          }
           api.openPanel();
-          nextTick(() => {
-            unrefElement(api.optionsRef)?.focus({ preventScroll: true });
-            if (!api.value.value) api.goToOption(Focus.FIRST);
-          });
           break;
 
         case 'ArrowUp':
           event.preventDefault();
+          event.stopPropagation();
+          if (api.isPanelVisible.value) {
+            api.goToOption(Focus.PREVIOUS);
+            return;
+          }
           api.openPanel();
           nextTick(() => {
-            unrefElement(api.optionsRef)?.focus({ preventScroll: true });
-            if (!api.value.value) api.goToOption(Focus.LAST);
+            if (!api.value.value) {
+              api.goToOption(Focus.LAST);
+            }
           });
+          break;
+        case 'Home':
+        case 'PageUp':
+          event.preventDefault();
+          event.stopPropagation();
+          api.goToOption(Focus.FIRST);
+          break;
+        case 'End':
+        case 'PageDown':
+          event.preventDefault();
+          event.stopPropagation();
+          api.goToOption(Focus.LAST);
+          break;
+        case 'Escape':
+          if (!api.isPanelVisible.value) return;
+          event.preventDefault();
+          event.stopPropagation();
+          api.closePanel();
           break;
         default:
           break;
@@ -246,35 +308,43 @@ export const DropdownButton = defineComponent({
     const onClick = (event) => {
       if (api.disabled) return;
       if (api.isPanelVisible.value) {
-        event.preventDefault();
-        api.closePanel();
-        nextTick(() => unrefElement(api.buttonRef)?.focus({ preventScroll: true }));
+        // event.preventDefault();
+        // api.closePanel();
+        // nextTick(() => unrefElement(api.buttonRef)?.focus({ preventScroll: true }));
       } else {
         event.preventDefault();
         api.openPanel();
-        nextFrame(() => unrefElement(api.optionsRef)?.focus({ preventScroll: true }));
+        // nextFrame(() => unrefElement(api.optionsRef)?.focus({ preventScroll: true }));
       }
     };
+
+    onMounted(() => console.log('api.buttonRef:', api.buttonRef.value));
 
     return {
       id,
       value,
-      el: api.buttonRef,
+      refEl: api.buttonRef,
       onClick,
       onFocus() {
         api.focus();
       },
 
       onKeyDown,
+      onInput: (event) => {
+        api.openPanel();
+        api.onInput(event);
+        emit('change', event);
+      },
+      onChange: (event) => emit('change', event),
     };
   },
 
   render() {
-    const api = useDropdownContext('DropdownButton');
+    const api = useDropdownContext('AutocompleteInput');
 
     const data = {
       as: this.$props.as,
-      ref: 'el',
+      ref: 'refEl',
       attrs: {
         id: this.id,
         'aria-expanded': api.isPanelVisible.value,
@@ -292,14 +362,18 @@ export const DropdownButton = defineComponent({
 
     const slot = {
       value: api.value.value,
+      click: this.onClick,
+      keydown: this.onKeyDown,
+      input: this.onInput,
+      change: this.onChange,
     };
 
-    return render({ slot, slots, data, name: 'DropdownButton' });
+    return render({ slot, slots, data, name: 'AutocompleteInput' });
   },
 });
 
-export const DropdownOptions = defineComponent({
-  name: 'DropdownOptions',
+export const AutocompleteOptions = defineComponent({
+  name: 'AutocompleteOptions',
 
   props: {
     as: {
@@ -319,7 +393,7 @@ export const DropdownOptions = defineComponent({
   },
 
   setup() {
-    const api = useDropdownContext('DropdownOptions');
+    const api = useDropdownContext('AutocompleteOptions');
     const id = `wa-dropdown-options-${useId()}`;
 
     const isVisible = computed(() => api.isPanelVisible);
@@ -332,7 +406,7 @@ export const DropdownOptions = defineComponent({
           event.stopPropagation();
           if (api.activeOptionIndex.value !== null) {
             const { dataRef } = api.options.value[api.activeOptionIndex.value];
-            api.select(dataRef.value);
+            // api.select(dataRef.value);
           }
           api.closePanel();
           nextTick(() => unrefElement(api.buttonRef)?.focus({ preventScroll: true }));
@@ -400,12 +474,12 @@ export const DropdownOptions = defineComponent({
 
     const strategy = this.$props.static ? 'static' : this.$props.unmount ? 'unmount' : 'hidden';
 
-    return render({ slots, data, visible: this.isVisible.value, strategy, name: 'DropdownOptions' });
+    return render({ slots, data, visible: this.isVisible.value, strategy, name: 'AutocompleteOptions' });
   },
 });
 
-export const DropdownOption = defineComponent({
-  name: 'DropdownOption',
+export const AutocompleteOption = defineComponent({
+  name: 'AutocompleteOption',
 
   props: {
     as: { type: [Object, String], default: 'li' },
@@ -414,7 +488,7 @@ export const DropdownOption = defineComponent({
   },
 
   setup(props) {
-    const api = useDropdownContext('DropdownOption');
+    const api = useDropdownContext('AutocompleteOption');
     const id = `wa-dropbox-option-${useId()}`;
     const { value, disabled } = props;
 
@@ -489,6 +563,25 @@ export const DropdownOption = defineComponent({
     };
     const slots = this.$scopedSlots;
 
-    return render({ slot, slots, data, name: 'DropdownOption' });
+    return render({ slot, slots, data, name: 'AutocompleteOption' });
   },
 });
+
+const useModelValueControl = (controlledValue, onChange, syncValue) => {
+  const internalValue = ref(controlledValue?.value);
+
+  watch(controlledValue, (value) => {
+    syncValue(value);
+  });
+
+  return [
+    internalValue,
+    function (value) {
+      return onChange?.(value);
+    },
+    function (value) {
+      // console.log('ON-INPUT:', value);
+      internalValue.value = value;
+    },
+  ];
+};

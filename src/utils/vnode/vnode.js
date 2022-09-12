@@ -33,12 +33,14 @@ const extractData = (vnode, customData) => {
   const { propsData, listeners } = vnode.componentOptions;
   const { on, attrs, ...restCostumData } = customData;
 
+  console.log({ listeners, on });
+
   return {
     ...data,
     ...restCostumData,
     attrs: { ...data.attrs, ...attrs },
     props: propsData,
     on: { ...listeners, ...on },
-    nativeOn: { ...listeners, ...on },
+    // nativeOn: { ...listeners, ...on },
   };
 };
