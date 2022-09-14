@@ -1,7 +1,13 @@
 <template>
-  <autocomplete v-model="modelValue" :display-value="displayValue" v-slot:default="{ open }" @open="onUpdatIsOpen" @close="onUpdatIsOpen">
+  <autocomplete
+    v-model="modelValue"
+    :display-value="displayValue"
+    v-slot:default="{ open }"
+    @open="onUpdatIsOpen"
+    @close="onUpdatIsOpen"
+  >
     <autocomplete-input ref="buttonRef" :as="as" @change="onChange" v-slot:default="{ value, input, change, keydown }">
-      <slot :value="value" :input="input" :change="change" :keydown="keydown" />
+      <slot :value="value" :input="input" :change="change" :keydown="keydown" :suggestion="suggestion" />
     </autocomplete-input>
     <div ref="popperRef" tabindex="-1">
       <transition name="popper-fade" @after-leave="onAfterLeave">
@@ -23,10 +29,27 @@
 
 <script>
 import { noop, unrefElement, useResizeObserver } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { head } from 'ramda';
+import { computed, ref, unref } from 'vue';
 import usePopper from '../../../composables/use-popper';
 import { PLACEMENTS } from '../w-popper/internal';
+import { matchCaps } from '../../../utils/string';
 import { Autocomplete, AutocompleteInput, AutocompleteOptions, AutocompleteOption } from './base-autocomplete';
+
+const useSuggestion = (modelValue, options, query, displayValue) => {
+  const suggestion = computed(() => {
+    if (unref(options).length === 0) return {};
+    if (modelValue.value) return modelValue.value;
+    return head(unref(options)) ?? {};
+  });
+  // return suggestion;
+
+  return computed(() => {
+    const x = matchCaps(displayValue(suggestion.value), query.value);
+    console.log(query.value);
+    return x;
+  });
+};
 
 export default {
   name: 'WAutocomplete',
@@ -119,6 +142,13 @@ export default {
 
     useResizeObserver(popperNode, () => update());
 
+    const suggestion = useSuggestion(
+      computed(() => props.value),
+      filtered,
+      computed(() => searchQuery.value),
+      props.displayValue
+    );
+
     return {
       isOpen,
       modelValue,
@@ -126,6 +156,7 @@ export default {
       popperRef,
       filtered,
       searchQuery,
+      suggestion,
       onUpdatIsOpen,
       onInput,
       onChange: onInput,

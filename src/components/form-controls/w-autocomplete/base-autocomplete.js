@@ -14,7 +14,7 @@ import {
 import { noop, onClickOutside, unrefElement } from '@vueuse/core';
 import { useId } from '../../../composables/use-id';
 import { calculateActiveIndex, Focus } from '../../../utils/calculate-active-index';
-// import { isFocusableElement } from '../../utils/focus-management';
+import { handleElementFocus, isFocusableElement } from '../../../utils/focus-management';
 import { render } from '../../../utils/vnode/render';
 
 const AutocompleteContext = Symbol('AutocompleteContext');
@@ -70,26 +70,13 @@ export const Autocomplete = defineComponent({
 
     const isPanelVisible = ref(false);
 
-    const [value, onValueChange, onInput] = useModelValueControl(
-      computed(() => props.value),
-      (value) => emit('input', value),
-      (value) => {
-        if (typeof props.displayValue === 'function') {
-          onInput(props.displayValue(value)) ?? '';
-        } else if (typeof value === 'string') {
-          onInput(value);
-        } else {
-          onInput('');
-        }
-      }
-    );
+    const [internalValue, onValueChange, onInput] = useModelValueControl((value) => emit('input', value));
 
     const api = {
-      value,
+      value: internalValue,
       isPanelVisible,
       buttonRef,
       optionsRef,
-      // activeOptionIndex,
       options,
       disabled,
       onInput,
@@ -109,10 +96,15 @@ export const Autocomplete = defineComponent({
         emit('open', false);
       },
 
-      // syncInputValue() {
-      //   const value = api.value.value;
-      //   console.log(api.buttonRef.value);
-      // },
+      syncInputValue(value) {
+        if (typeof props.displayValue === 'function') {
+          internalValue.value = props.displayValue(value) ?? '';
+        } else if (typeof value === 'string') {
+          internalValue.value = value;
+        } else {
+          internalValue.value = '';
+        }
+      },
 
       activeOptionIndex: computed(() => {
         if (activeOptionIndex.value === null && options.value.length > 0) {
@@ -144,19 +136,15 @@ export const Autocomplete = defineComponent({
       select(value) {
         if (disabled) return;
         emit('input', value);
+        api.syncInputValue(value);
       },
 
       selectActiveOption() {
-        console.log('selectActiveOption', api.activeOptionIndex.value);
-        if (api.activeOptionIndex.value === null) {
-          // api.select(head(options.value)?.dataRef.value);
-          // return;
-        }
+        if (api.activeOptionIndex.value === null) return;
 
-        let { dataRef, id } = options.value[api.activeOptionIndex.value];
-        console.log({ dataRef, id });
-        // api.select(dataRef.value);
+        const { dataRef, id } = options.value[api.activeOptionIndex.value];
         onValueChange(dataRef.value);
+        api.syncInputValue(dataRef.value);
         api.goToOption(Focus.SPECIFIC, id);
       },
 
@@ -187,38 +175,34 @@ export const Autocomplete = defineComponent({
 
     provide(AutocompleteContext, api);
 
+    // Handle outside click
     onClickOutside(api.optionsRef, (event) => {
+      console.log('onClickOutside');
       if (unrefElement(buttonRef)?.contains(event.target)) return;
       api.closePanel();
+
+      if (!isFocusableElement(event.target)) {
+        console.log('FOCUS');
+        handleElementFocus(unrefElement(buttonRef));
+      }
     });
 
-    // Handle outside click
-    // useWindowEvent('mousedown', (event) => {
-    //   const target = event.target;
-
-    //   if (!isPanelVisible.value) return;
-
-    //   if (dom(buttonRef)?.contains(target)) return;
-    //   if (dom(optionsRef)?.contains(target)) return;
-
-    //   api.closePanel();
-
-    //   if (!isFocusableElement(target)) {
-    //     event.preventDefault();
-    //     dom(buttonRef)?.focus();
-    //   }
-    // });
+    watch(
+      () => props.value,
+      (value) => api.syncInputValue(value),
+      { immediate: true, flush: 'post' }
+    );
 
     return {
       open: isPanelVisible,
-      value,
+      internalValue,
     };
   },
 
   render() {
     const slot = {
       open: this.open,
-      value: this.value?.value,
+      value: this.internalValue?.value,
     };
     const slots = this.$scopedSlots;
 
@@ -318,7 +302,7 @@ export const AutocompleteInput = defineComponent({
       }
     };
 
-    onMounted(() => console.log('api.buttonRef:', api.buttonRef.value));
+    // onMounted(() => console.log('api.buttonRef:', api.buttonRef.value));
 
     return {
       id,
@@ -361,7 +345,7 @@ export const AutocompleteInput = defineComponent({
     const slots = this.$scopedSlots;
 
     const slot = {
-      value: api.value.value,
+      value: api.value?.value,
       click: this.onClick,
       keydown: this.onKeyDown,
       input: this.onInput,
@@ -567,12 +551,8 @@ export const AutocompleteOption = defineComponent({
   },
 });
 
-const useModelValueControl = (controlledValue, onChange, syncValue) => {
-  const internalValue = ref(controlledValue?.value);
-
-  watch(controlledValue, (value) => {
-    syncValue(value);
-  });
+const useModelValueControl = (onChange) => {
+  const internalValue = ref();
 
   return [
     internalValue,

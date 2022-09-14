@@ -117,10 +117,10 @@
         v-model="states.autocomplete"
         :options="people"
         placement="bottom-start"
-        v-slot:default="{ value, input, change, keydown }"
-        :display-value="(person) => person.name"
+        v-slot:default="{ value, suggestion, input, change, keydown }"
+        :display-value="(person) => person?.name"
       >
-        <w-input :value="value" label="Destination" v-on="{ input, change, keydown }" />
+        <w-input :value="value" :hint="suggestion" label="Destination" v-on="{ input, change, keydown }" />
       </w-autocomplete>
     </div>
   </div>
