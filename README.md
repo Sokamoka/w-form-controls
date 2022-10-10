@@ -32,6 +32,7 @@ Továbbá az egyes komponesek is kis egyszerű funkcionális komponensekből ép
   </InputWrapper>
 </InputControl>
 ```
+Mobilon az előugró ablakos megoldás nem igazán működik, ott a modal megjelenést szoktuk használni. Az elképzelés szerint, ezt egy különálló, de az eredeti elemekből építkező komponessel oldanánk meg.
 
 A fejlesztések több okból is `composition-api`-val készültek. Ideálisbnak tünt ezt használni, plusz a Vue 3 átállásnál is könnyebb és közelebb áll a React logikához is ha esetleg Átállunk arra.
 
